@@ -6,7 +6,7 @@
 
 **Prémiový e-shop s 3D tisknutými Pokéboly · 🇨🇿 Made in Czech Republic**
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/placeholder/deploy-status)](https://drobnostik.cz)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/placeholder/deploy-status)](drobnostik.netlify.app)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES2020-F7DF1E?logo=javascript&logoColor=black)
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=white)
 ![Netlify](https://img.shields.io/badge/Hosted%20on-Netlify-00C7B7?logo=netlify&logoColor=white)
