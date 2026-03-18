@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://drobnostik.cz/sitemap.xml

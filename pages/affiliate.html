@@ -1,0 +1,118 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:1000px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Affiliate program</span></nav>
+    <!-- Hero -->
+    <div style="text-align:center;padding:56px 20px;background:linear-gradient(135deg,#0d1a0d,#1a2a1a);border-radius:16px;border:1px solid rgba(79,204,79,0.15);margin-bottom:40px;">
+      <div style="font-size:52px;margin-bottom:14px;">🤝</div>
+      <h1 style="font-size:clamp(26px,4vw,40px);font-weight:700;margin-bottom:14px;">Affiliate program Drobnostík</h1>
+      <p style="color:#999;font-size:16px;max-width:520px;margin:0 auto 24px;line-height:1.7;">Doporučujte naše produkty a vydělávejte. Za každý prodej z vašeho odkazu dostanete provizi.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button onclick="document.getElementById('affiliate-form').scrollIntoView({behavior:'smooth'})" class="btn-primary" style="padding:14px 28px;font-size:15px;">Začít vydělávat →</button>
+        <button onclick="goTo('/affiliate/dashboard')" class="btn-secondary" style="padding:14px 24px;font-size:15px;">Přihlásit se</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:40px;">
+      <div style="text-align:center;padding:24px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+        <div style="font-size:36px;font-weight:700;color:#4f4;margin-bottom:6px;">10%</div>
+        <div style="color:#777;font-size:14px;">Základní provize</div>
+      </div>
+      <div style="text-align:center;padding:24px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+        <div style="font-size:36px;font-weight:700;color:#c8a96a;margin-bottom:6px;">15%</div>
+        <div style="color:#777;font-size:14px;">VIP provize (10+ prodejů/měsíc)</div>
+      </div>
+      <div style="text-align:center;padding:24px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+        <div style="font-size:36px;font-weight:700;color:#4af;margin-bottom:6px;">30 dní</div>
+        <div style="color:#777;font-size:14px;">Cookie tracking</div>
+      </div>
+      <div style="text-align:center;padding:24px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+        <div style="font-size:36px;font-weight:700;color:#f4f;margin-bottom:6px;">500 Kč</div>
+        <div style="color:#777;font-size:14px;">Minimální výplata</div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <h2 style="font-size:24px;font-weight:700;text-align:center;margin-bottom:24px;">Jak to funguje?</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:40px;">
+      <div class="card" style="text-align:center;padding:24px;">
+        <div style="font-size:32px;margin-bottom:10px;">1️⃣</div>
+        <h3 style="margin-bottom:8px;font-size:15px;">Registrujte se</h3>
+        <p style="color:#777;font-size:13px;line-height:1.6;">Vyplňte formulář níže. Schválení do 24 hodin.</p>
+      </div>
+      <div class="card" style="text-align:center;padding:24px;">
+        <div style="font-size:32px;margin-bottom:10px;">2️⃣</div>
+        <h3 style="margin-bottom:8px;font-size:15px;">Získejte odkaz</h3>
+        <p style="color:#777;font-size:13px;line-height:1.6;">Dostanete unikátní tracking odkaz pro sdílení.</p>
+      </div>
+      <div class="card" style="text-align:center;padding:24px;">
+        <div style="font-size:32px;margin-bottom:10px;">3️⃣</div>
+        <h3 style="margin-bottom:8px;font-size:15px;">Sdílejte</h3>
+        <p style="color:#777;font-size:13px;line-height:1.6;">Sdílejte na blogu, sociálních sítích, YouTube...</p>
+      </div>
+      <div class="card" style="text-align:center;padding:24px;">
+        <div style="font-size:32px;margin-bottom:10px;">4️⃣</div>
+        <h3 style="margin-bottom:8px;font-size:15px;">Vydělávejte</h3>
+        <p style="color:#777;font-size:13px;line-height:1.6;">Za každý prodej z vašeho odkazu inkasujete provizi.</p>
+      </div>
+    </div>
+
+    <!-- Registration form -->
+    <div id="affiliate-form" style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:28px;max-width:560px;margin:0 auto;">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:20px;">Registrace affiliate partnera</h2>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label>Jméno *</label><input id="aff-name" type="text" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Příjmení *</label><input id="aff-surname" type="text" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+        </div>
+        <div><label>Email *</label><input id="aff-email" type="email" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+        <div><label>Web / profil sociálních sítí</label><input id="aff-website" type="url" placeholder="https://" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+        <div><label>Jak budete propagovat?</label>
+          <select id="aff-channel" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+            <option value="blog">Blog / web</option>
+            <option value="youtube">YouTube</option>
+            <option value="instagram">Instagram</option>
+            <option value="tiktok">TikTok</option>
+            <option value="facebook">Facebook</option>
+            <option value="other">Jiné</option>
+          </select>
+        </div>
+        <div><label>Počet sledujících / návštěvníků měsíčně</label><input id="aff-reach" type="number" placeholder="Přibližně..." style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+        <div><label>Proč chcete spolupracovat?</label><textarea id="aff-motivation" rows="3" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;resize:vertical;"></textarea></div>
+        <button onclick="submitAffiliateApp()" class="btn-primary" style="padding:13px;font-size:15px;">Odeslat přihlášku</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function submitAffiliateApp() {
+  var name = document.getElementById('aff-name')?.value?.trim();
+  var surname = document.getElementById('aff-surname')?.value?.trim();
+  var email = document.getElementById('aff-email')?.value?.trim();
+  if (!name || !surname || !email) { showToast('Vyplňte povinná pole'); return; }
+  // Vygeneruj unikátní referral kód: první 4 písmena příjmení + rok
+  var code = (surname.substring(0,4) + '2026').toUpperCase().replace(/[^A-Z0-9]/g, 'X');
+  try {
+    var sb = await getSupabase();
+    // Zkontroluj unikátnost kódu
+    var { data: existing } = await sb.from('affiliates').select('referral_code').eq('referral_code', code);
+    if (existing && existing.length > 0) code = code + Math.floor(Math.random()*90+10);
+    await sb.from('affiliates').insert([{
+      name: name + ' ' + surname, email, referral_code: code,
+      status: 'active', commission_rate: 10,
+      total_earned: 0, total_clicks: 0, total_sales: 0
+    }]);
+    showToast('✓ Registrace dokončena! Váš kód: ' + code);
+    sessionStorage.setItem('affiliate_code', code);
+    localStorage.setItem('affiliate_code', code);
+    ['aff-name','aff-surname','aff-email','aff-website','aff-reach','aff-motivation'].forEach(id => {
+      var el = document.getElementById(id); if (el) el.value = '';
+    });
+    setTimeout(() => goTo('/affiliate/dashboard'), 1500);
+  } catch(e) {
+    showToast('Chyba: ' + e.message);
+  }
+}
+window.submitAffiliateApp = submitAffiliateApp;
+</script>

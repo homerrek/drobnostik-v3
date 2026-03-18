@@ -1,0 +1,116 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <a href="/shop" onclick="event.preventDefault();goTo('/shop')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Obchod</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Srovnání</span></nav>
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">⚖️ Srovnání produktů</h1>
+    <p style="color:#777;margin-bottom:28px;font-size:15px;">Vyberte až 3 produkty pro porovnání.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:28px;">
+      <div style="background:#1a1a1a;padding:16px;border-radius:8px;border:1px solid #2a2a2a;">
+        <label style="font-size:12px;">Produkt 1</label>
+        <select id="compare-product-1" onchange="loadComparison()" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;margin-top:6px;">
+          <option value="">Vybrat produkt...</option>
+        </select>
+      </div>
+      <div style="background:#1a1a1a;padding:16px;border-radius:8px;border:1px solid #2a2a2a;">
+        <label style="font-size:12px;">Produkt 2</label>
+        <select id="compare-product-2" onchange="loadComparison()" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;margin-top:6px;">
+          <option value="">Vybrat produkt...</option>
+        </select>
+      </div>
+      <div style="background:#1a1a1a;padding:16px;border-radius:8px;border:1px solid #2a2a2a;">
+        <label style="font-size:12px;">Produkt 3</label>
+        <select id="compare-product-3" onchange="loadComparison()" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;margin-top:6px;">
+          <option value="">Vybrat produkt...</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="comparison-table"></div>
+  </div>
+</main>
+
+<script>
+async function initComparison() {
+  try {
+    var sb = await getSupabase();
+    var { data: products } = await sb.from('products').select('*').eq('is_active', true);
+    if (!products?.length) return;
+
+    ['compare-product-1','compare-product-2','compare-product-3'].forEach(id => {
+      var sel = document.getElementById(id);
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Vybrat produkt...</option>' +
+        products.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+    });
+  } catch (e) { console.error('Comparison init error:', e); }
+}
+
+async function loadComparison() {
+  var ids = [1,2,3].map(i => document.getElementById('compare-product-' + i)?.value).filter(Boolean);
+  var container = document.getElementById('comparison-table');
+  if (!container) return;
+
+  if (ids.length < 2) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">Vyberte alespoň 2 produkty pro srovnání.</div>';
+    return;
+  }
+  container.innerHTML = '<div class="loading-spinner"></div>';
+
+  try {
+    var sb = await getSupabase();
+    var { data: products } = await sb.from('products').select('*').in('id', ids);
+    if (!products?.length) return;
+
+    var fields = [
+      { key: 'category', label: 'Kategorie' },
+      { key: 'price_small', label: 'Cena Small (Kč)' },
+      { key: 'price_standard', label: 'Cena Standard (Kč)' },
+      { key: 'price_maxi', label: 'Cena Maxi (Kč)' },
+      { key: 'stock_quantity', label: 'Skladem (ks)' },
+    ];
+
+    var colW = `${Math.floor(100 / (products.length + 1))}%`;
+
+    container.innerHTML = `
+      <div style="overflow-x:auto;">
+        <table class="data-table" style="min-width:500px;">
+          <thead>
+            <tr>
+              <th style="width:${colW};">Parametr</th>
+              ${products.map(p => `<th style="width:${colW};text-align:center;">
+                <img src="/images/products/pokebowl-${p.default_color || 'black'}-front.jpg" style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin-bottom:6px;" alt="${escapeHtml(p.name)}" onerror="this.style.display='none'">
+                <div>${escapeHtml(p.name)}</div>
+              </th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:#999;font-size:13px;">Popis</td>
+              ${products.map(p => `<td style="font-size:13px;color:#ccc;">${escapeHtml(p.description?.slice(0,80) || '—')}...</td>`).join('')}
+            </tr>
+            ${fields.map(f => `
+              <tr>
+                <td style="color:#999;font-size:13px;">${f.label}</td>
+                ${products.map(p => {
+                  var val = p[f.key];
+                  return `<td style="text-align:center;font-size:14px;color:#fff;font-weight:${f.key.includes('price') ? '700' : '400'};${f.key.includes('price') ? 'color:#c8a96a;' : ''}">
+                    ${val != null ? (f.key.includes('price') ? formatPrice(val) : escapeHtml(String(val))) : '<span style="color:#444;">—</span>'}
+                  </td>`;}).join('')}
+              </tr>`).join('')}
+            <tr>
+              <td style="color:#999;font-size:13px;">Akce</td>
+              ${products.map(p => `<td style="text-align:center;">
+                <button onclick="viewProduct(${p.id})" class="btn-primary" style="padding:8px 14px;font-size:12px;">Koupit</button>
+              </td>`).join('')}
+            </tr>
+          </tbody>
+        </table>
+      </div>`;
+  } catch (e) {
+    container.innerHTML = `<div style="color:#f44;text-align:center;">Chyba: ${e.message}</div>`;
+  }
+}
+
+window.initComparison = initComparison;
+window.loadComparison = loadComparison;
+</script>

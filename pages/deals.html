@@ -1,0 +1,42 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <a href="/shop" onclick="event.preventDefault();goTo('/shop')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Obchod</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Akce a slevy</span></nav>
+    <div style="text-align:center;padding:40px 20px;background:linear-gradient(135deg,#1a0a0a,#2a1010);border-radius:12px;border:1px solid rgba(244,68,68,0.2);margin-bottom:36px;">
+      <div style="font-size:48px;margin-bottom:12px;">🔥</div>
+      <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">Akce a slevy</h1>
+      <p style="color:#999;font-size:15px;">Limitované nabídky za zvýhodněné ceny. Zásoby jsou omezené!</p>
+    </div>
+    <div id="deals-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
+</main>
+<script>
+async function loadDeals() {
+  var grid = document.getElementById('deals-grid');
+  if (!grid) return;
+  try {
+    var sb = await getSupabase();
+    var { data: products, error } = await sb.from('products')
+      .select('*').not('sale_price', 'is', null).eq('is_active', true);
+    if (error) throw error;
+    if (products && products.length > 0) {
+      if (typeof resetGridImageTracking === "function") resetGridImageTracking();
+      grid.innerHTML = products.map(p => renderProductCard(p)).join('');
+    } else {
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#777;">
+        <div style="font-size:48px;margin-bottom:16px;">😔</div>
+        <h2 style="margin-bottom:8px;">Momentálně žádné akce</h2>
+        <p style="margin-bottom:20px;font-size:14px;">Přihlaste se k newsletteru a jako první se dozvíte o nových akcích.</p>
+        <button onclick="goTo('/subscriptions')" class="btn-primary" style="padding:12px 24px;">Přihlásit k newsletteru</button>
+      </div>`;
+    }
+  } catch (e) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#f44;">❌ ${escapeHtml(e.message)}</div>`;
+  }
+}
+window.loadDeals = loadDeals;
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof loadDeals === 'function') loadDeals();
+});
+</script>

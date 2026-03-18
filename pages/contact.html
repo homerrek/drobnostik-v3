@@ -1,0 +1,105 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:960px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Kontakt</span></nav>
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">Kontaktujte nás</h1>
+    <p style="color:#777;margin-bottom:36px;font-size:15px;">Máte otázku nebo problém? Rádi vám pomůžeme.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;" class="grid-contact">
+
+      <!-- Formulář -->
+      <div>
+        <h2 style="font-size:17px;font-weight:700;margin-bottom:20px;">Odeslat zprávu</h2>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <label for="contact-name">Jméno *</label>
+            <input id="contact-name" type="text" placeholder="Vaše jméno" style="width:100%;">
+          </div>
+          <div>
+            <label for="contact-email">Email *</label>
+            <input id="contact-email" type="email" placeholder="vas@email.cz" style="width:100%;">
+          </div>
+          <div>
+            <label for="contact-phone">Telefon</label>
+            <input id="contact-phone" type="tel" placeholder="+420 777 000 000" style="width:100%;">
+          </div>
+          <div>
+            <label for="contact-subject">Předmět</label>
+            <select id="contact-subject" style="width:100%;">
+              <option value="general">Obecný dotaz</option>
+              <option value="order">Otázka k objednávce</option>
+              <option value="return">Reklamace / vrácení</option>
+              <option value="custom">Zakázkový tisk</option>
+              <option value="other">Ostatní</option>
+            </select>
+          </div>
+          <div>
+            <label for="contact-message">Zpráva *</label>
+            <textarea id="contact-message" rows="5" placeholder="Napište svůj dotaz..."
+              style="width:100%;resize:vertical;"></textarea>
+          </div>
+          <button onclick="sendContactMessage()" class="btn-primary" style="padding:13px;font-size:15px;">Odeslat zprávu</button>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div>
+        <h2 style="font-size:17px;font-weight:700;margin-bottom:20px;">Kontaktní informace</h2>
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div style="padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+            <div style="font-weight:600;color:#c8a96a;margin-bottom:6px;">📧 Email</div>
+            <a href="mailto:info@drobnostik.cz" style="color:#999;text-decoration:none;">info@drobnostik.cz</a>
+          </div>
+          <div style="padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+            <div style="font-weight:600;color:#c8a96a;margin-bottom:6px;">📞 Telefon</div>
+            <a href="tel:+420777123456" style="color:#999;text-decoration:none;">+420 777 123 456</a>
+          </div>
+          <div style="padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+            <div style="font-weight:600;color:#c8a96a;margin-bottom:6px;">📍 Adresa</div>
+            <div style="color:#999;line-height:1.7;">Dlouhá 15<br>110 00 Night City<br>Česká republika</div>
+          </div>
+          <div style="padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+            <div style="font-weight:600;color:#c8a96a;margin-bottom:6px;">⏰ Otevírací doba</div>
+            <div style="color:#999;font-size:14px;line-height:1.8;">
+              Po – Pá: 9:00 – 17:00<br>
+              Odpovídáme do 24 hodin.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function sendContactMessage() {
+  var name = document.getElementById('contact-name')?.value?.trim();
+  var email = document.getElementById('contact-email')?.value?.trim();
+  var message = document.getElementById('contact-message')?.value?.trim();
+  if (!name || !email || !message) { showToast('⚠️ Vyplňte povinná pole'); return; }
+  if (!email.includes('@')) { showToast('⚠️ Zadejte platný email'); return; }
+
+  var btn = document.querySelector('[onclick="sendContactMessage()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Odesílám...'; }
+
+  try {
+    var sb = await getSupabase();
+    var { error } = await sb.from('contact_messages').insert([{
+      name, email,
+      phone: document.getElementById('contact-phone')?.value || '',
+      subject: document.getElementById('contact-subject')?.value || 'general',
+      message
+    }]);
+    if (error) throw error;
+    showToast('✓ Zpráva odeslána! Ozveme se do 24 hodin.');
+    ['contact-name','contact-email','contact-phone','contact-message'].forEach(id => {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+  } catch (e) {
+    showToast('Chyba: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Odeslat zprávu'; }
+  }
+}
+window.sendContactMessage = sendContactMessage;
+</script>

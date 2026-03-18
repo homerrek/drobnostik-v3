@@ -1,0 +1,132 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+        <h1 style="font-size:22px;font-weight:700;">📦 Správa skladu</h1>
+        <button onclick="exportInventory()" class="btn-secondary" style="padding:9px 16px;font-size:13px;">📥 Export CSV</button>
+      </div>
+      <!-- Summary -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;" id="inv-summary">
+        <div class="loading-spinner"></div>
+      </div>
+      <!-- Filters -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <select id="inv-filter" onchange="loadInventory()" style="padding:9px 14px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;font-size:13px;">
+          <option value="">Vše</option>
+          <option value="low">⚠️ Málo skladem (≤5)</option>
+          <option value="out">❌ Vyprodáno (0)</option>
+          <option value="ok">✅ Dostupné</option>
+        </select>
+        <input id="inv-search" type="text" placeholder="Hledat produkt..." oninput="loadInventory()" style="padding:9px 14px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;font-size:13px;flex:1;min-width:180px;">
+      </div>
+      <div id="inv-list"><div class="loading-spinner"></div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function loadInventory() {
+  if (!checkAdminAuth()) return;
+  var filter = document.getElementById('inv-filter')?.value || '';
+  var search = document.getElementById('inv-search')?.value?.toLowerCase() || '';
+  var sumEl = document.getElementById('inv-summary');
+  var listEl = document.getElementById('inv-list');
+
+  try {
+    var sb = await getSupabase();
+    var { data: products, error } = await sb.from('products').select('*').order('stock_quantity', { ascending: true });
+    if (error) throw error;
+
+    var total = products?.length || 0;
+    var outOfStock = products?.filter(p => (p.stock_quantity || 0) === 0).length || 0;
+    var lowStock = products?.filter(p => (p.stock_quantity || 0) > 0 && (p.stock_quantity || 0) <= 5).length || 0;
+    var totalUnits = products?.reduce((s, p) => s + (p.stock_quantity || 0), 0) || 0;
+
+    if (sumEl) sumEl.innerHTML = `
+      <div style="padding:16px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:26px;font-weight:700;">${total}</div><div style="color:#666;font-size:12px;margin-top:4px;">Produktů celkem</div>
+      </div>
+      <div style="padding:16px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:26px;font-weight:700;color:#f44;">${outOfStock}</div><div style="color:#666;font-size:12px;margin-top:4px;">Vyprodáno</div>
+      </div>
+      <div style="padding:16px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:26px;font-weight:700;color:#fa0;">${lowStock}</div><div style="color:#666;font-size:12px;margin-top:4px;">Málo skladem</div>
+      </div>
+      <div style="padding:16px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:26px;font-weight:700;color:#4f4;">${totalUnits}</div><div style="color:#666;font-size:12px;margin-top:4px;">Jednotek skladem</div>
+      </div>`;
+
+    var filtered = products || [];
+    if (filter === 'low') filtered = filtered.filter(p => p.stock_quantity > 0 && p.stock_quantity <= 5);
+    else if (filter === 'out') filtered = filtered.filter(p => (p.stock_quantity || 0) === 0);
+    else if (filter === 'ok') filtered = filtered.filter(p => (p.stock_quantity || 0) > 5);
+    if (search) filtered = filtered.filter(p => p.name?.toLowerCase().includes(search));
+
+    if (listEl) listEl.innerHTML = filtered.length ? `
+      <table class="data-table">
+        <thead><tr><th>Produkt</th><th>SKU</th><th>Kategorie</th><th>Skladem</th><th>Stav</th><th>Akce</th></tr></thead>
+        <tbody>${filtered.map(p => `
+          <tr>
+            <td style="font-weight:600;">${escapeHtml(p.name)}</td>
+            <td style="font-family:monospace;font-size:12px;color:#777;">${escapeHtml(p.sku || '—')}</td>
+            <td style="color:#777;font-size:13px;">${escapeHtml(p.category || '—')}</td>
+            <td>
+              <input type="number" value="${p.stock_quantity || 0}" min="0"
+                onchange="updateStock(${p.id}, this.value)"
+                style="width:80px;padding:6px;border:1px solid #333;border-radius:4px;background:#0a0a0a;color:#fff;text-align:center;">
+            </td>
+            <td><span style="color:${p.stock_quantity === 0 ? '#f44' : p.stock_quantity <= 5 ? '#fa0' : '#4f4'};font-weight:600;">
+              ${p.stock_quantity === 0 ? '❌ Vyprodáno' : p.stock_quantity <= 5 ? '⚠️ Málo skladem' : '✅ OK'}
+            </span></td>
+            <td><button onclick="restockProduct(${p.id}, '${escapeHtml(p.name)}')" style="background:rgba(79,204,79,0.15);color:#4f4;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;">+ Naskladnit</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : '<div style="text-align:center;padding:40px;color:#666;">Žádné produkty</div>';
+  } catch(e) {
+    if (listEl) listEl.innerHTML = `<div style="color:#f44;padding:20px;">Chyba: ${e.message}</div>`;
+  }
+}
+
+async function updateStock(productId, qty) {
+  try {
+    var sb = await getSupabase();
+    await sb.from('products').update({ stock_quantity: parseInt(qty) || 0 }).eq('id', productId);
+    showToast('✓ Sklad aktualizován');
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+
+function restockProduct(id, name) {
+  var qty = prompt(`Kolik kusů naskladnit pro "${name}"?`, '10');
+  if (!qty || isNaN(qty)) return;
+  updateStock(id, qty);
+  setTimeout(loadInventory, 500);
+}
+
+function exportInventory() {
+  showToast('Export CSV — funkce bude dostupná po nasazení na server');
+}
+
+window.loadInventory = loadInventory;
+window.updateStock = updateStock;
+window.restockProduct = restockProduct;
+window.exportInventory = exportInventory;
+</script>

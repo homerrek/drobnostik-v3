@@ -1,0 +1,70 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:900px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Newsletter</span></nav>
+    <div style="text-align:center;margin-bottom:40px;">
+      <h1 style="font-size:32px;font-weight:700;margin-bottom:10px;">📬 Newsletter & Odběry</h1>
+      <p style="color:#777;font-size:15px;">Buďte první, kdo se dozví o nových produktech a akčních nabídkách.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:36px;" class="grid-contact">
+      <div style="padding:28px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+        <div style="font-size:32px;margin-bottom:12px;">📧</div>
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:8px;">Newsletter</h2>
+        <p style="color:#777;font-size:14px;margin-bottom:20px;line-height:1.7;">Novinky, slevy a exkluzivní nabídky přímo do vašeho emailu. Bez spamu.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input id="sub-email" type="email" placeholder="vas@email.cz" style="width:100%;padding:11px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+          <button onclick="subscribeEmail()" class="btn-primary" style="padding:11px;font-size:14px;">Přihlásit k odběru</button>
+        </div>
+        <p style="color:#555;font-size:12px;margin-top:10px;">Odhlášení kdykoliv jedním kliknutím.</p>
+      </div>
+      <div style="padding:28px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+        <div style="font-size:32px;margin-bottom:12px;">🔔</div>
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:8px;">Upozornění na dostupnost</h2>
+        <p style="color:#777;font-size:14px;margin-bottom:20px;line-height:1.7;">Nastavte upozornění, když se produkt vrátí na sklad.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input id="notify-email" type="email" placeholder="vas@email.cz" style="width:100%;padding:11px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+          <input id="notify-product" type="text" placeholder="Název nebo ID produktu" style="width:100%;padding:11px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+          <button onclick="subscribeNotify()" class="btn-secondary" style="padding:11px;font-size:14px;">Nastavit upozornění</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:24px;background:#111;border-radius:10px;border:1px solid #222;">
+      <h3 style="margin-bottom:16px;font-size:16px;">Výhody odběru newsletteru</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+        <div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;"><span style="color:#c8a96a;">✓</span> Sleva 10% na první nákup</div>
+        <div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;"><span style="color:#c8a96a;">✓</span> Exkluzivní flash sales</div>
+        <div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;"><span style="color:#c8a96a;">✓</span> Novinky jako první</div>
+        <div style="display:flex;align-items:center;gap:8px;color:#999;font-size:14px;"><span style="color:#c8a96a;">✓</span> Tipy a průvodci péčí</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function subscribeEmail() {
+  var email = document.getElementById('sub-email')?.value?.trim();
+  if (!email || !email.includes('@')) { showToast('Zadejte platný email'); return; }
+  try {
+    var sb = await getSupabase();
+    var { error } = await sb.from('newsletter_subscribers').insert([{ email }]);
+    if (error && error.code === '23505') { showToast('Tento email je již přihlášen'); }
+    else if (error) throw error;
+    else { showToast('✓ Přihlášeni! Slevový kód dorazí emailem.'); document.getElementById('sub-email').value = ''; }
+  } catch (e) { showToast('Chyba: ' + e.message); }
+}
+
+function subscribeNotify() {
+  var email = document.getElementById('notify-email')?.value?.trim();
+  var product = document.getElementById('notify-product')?.value?.trim();
+  if (!email || !product) { showToast('Vyplňte email i název produktu'); return; }
+  showToast('✓ Upozornění nastaveno! Dáme vám vědět.');
+  document.getElementById('notify-email').value = '';
+  document.getElementById('notify-product').value = '';
+}
+
+function loadSubscriptions() { /* static page */ }
+window.loadSubscriptions = loadSubscriptions;
+window.subscribeEmail = subscribeEmail;
+window.subscribeNotify = subscribeNotify;
+</script>

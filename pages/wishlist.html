@@ -1,0 +1,78 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Oblíbené</span></nav>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:32px;font-weight:700;margin-bottom:6px;">❤️ Moje oblíbené</h1>
+        <p style="color:#777;font-size:14px;">Produkty, které jste si uložili</p>
+      </div>
+      <button onclick="goTo('/shop')" class="btn-secondary" style="padding:10px 20px;">Zpět na obchod</button>
+    </div>
+    <div id="wishlist-content"><div class="loading-spinner"></div></div>
+  </div>
+</main>
+
+<script>
+async function loadWishlist() {
+  var wishlist = Wishlist.getItems();
+  var container = document.getElementById('wishlist-content');
+  if (!container) return;
+
+  if (wishlist.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:80px 20px;color:#999;">
+        <div style="font-size:64px;margin-bottom:20px;">🤍</div>
+        <h2 style="margin-bottom:12px;">Oblíbené je prázdné</h2>
+        <p style="color:#666;margin-bottom:24px;">Přidejte produkty kliknutím na ❤️ v obchodě.</p>
+        <button onclick="goTo('/shop')" class="btn-primary" style="padding:12px 28px;">Prohlédnout obchod</button>
+      </div>`;
+    return;
+  }
+
+  try {
+    var sb = await getSupabase();
+    var { data: products, error } = await sb.from('products').select('*').in('id', wishlist);
+    if (error) throw error;
+
+    if (!products?.length) {
+      container.innerHTML = '<div style="color:#999;text-align:center;padding:40px;">Produkty nenalezeny</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div style="display:grid;gap:16px;">
+        ${products.map(p => `
+          <div class="wishlist-item" style="display:grid;grid-template-columns:120px 1fr auto;gap:20px;padding:20px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;align-items:center;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#2a2a2a'">
+            <div style="aspect-ratio:1;background:#222;border-radius:6px;overflow:hidden;cursor:pointer;" onclick="viewProduct(${p.id})">
+              <img src="/images/products/pokebowl-${p.default_color || 'black'}-front.jpg" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='/images/products/pokebowl-black-front.jpg'" alt="${escapeHtml(p.name)}">
+            </div>
+            <div>
+              <h3 style="font-size:17px;font-weight:700;margin-bottom:6px;cursor:pointer;color:#fff;" onclick="viewProduct(${p.id})">${escapeHtml(p.name)}</h3>
+              <div style="color:#666;font-size:13px;margin-bottom:8px;">${escapeHtml(p.category || 'Pokebally')}</div>
+              <div style="color:#c8a96a;font-weight:700;font-size:16px;">Od ${formatPrice(p.price_small || p.price_standard || 0)} Kč</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;min-width:120px;">
+              <button onclick="viewProduct(${p.id})" class="btn-primary" style="padding:9px 14px;font-size:13px;white-space:nowrap;">Koupit</button>
+              <button onclick="removeFromWishlist(${p.id})" class="btn-danger" style="padding:9px 14px;font-size:13px;">Odebrat</button>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  } catch (e) {
+    container.innerHTML = `<div style="color:#f44;text-align:center;padding:40px;">❌ Chyba: ${e.message}</div>`;
+  }
+}
+
+function removeFromWishlist(id) {
+  Wishlist.remove(id);
+  loadWishlist();
+}
+
+function viewProduct(id) {
+  sessionStorage.setItem('selectedProductId', id);
+  goTo('/product');
+}
+
+window.loadWishlist = loadWishlist;
+window.removeFromWishlist = removeFromWishlist;
+window.viewProduct = viewProduct;
+</script>

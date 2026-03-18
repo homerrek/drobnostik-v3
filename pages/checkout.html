@@ -1,0 +1,338 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:960px;margin:0 auto;">
+    <div id="checkout-breadcrumb" style="margin-bottom:8px;"></div>
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">Pokladna</h1>
+    <p style="color:#777;margin-bottom:28px;font-size:14px;">Bezpečná objednávka · Zašifrováno · Ochrana dat</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;" class="grid-checkout">
+
+      <!-- LEFT: Form -->
+      <div>
+        <h2 style="font-size:17px;font-weight:700;margin-bottom:20px;color:#c8a96a;">📦 Doručovací údaje</h2>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <label for="name">Jméno a příjmení *</label>
+            <input id="name" type="text" placeholder="Jan Novák" autocomplete="name" style="width:100%;">
+          </div>
+          <div>
+            <label for="email">Email *</label>
+            <input id="email" type="email" placeholder="jan@example.cz" autocomplete="email" style="width:100%;">
+          </div>
+          <div>
+            <label for="phone">Telefon</label>
+            <input id="phone" type="tel" placeholder="+420 777 123 456" autocomplete="tel" style="width:100%;">
+          </div>
+          <div>
+            <label for="street">Ulice a č.p. *</label>
+            <input id="street" type="text" placeholder="Dlouhá 15" autocomplete="street-address" style="width:100%;">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label for="city">Město *</label>
+              <input id="city" type="text" placeholder="Praha" autocomplete="address-level2" style="width:100%;">
+            </div>
+            <div>
+              <label for="postal">PSČ *</label>
+              <input id="postal" type="text" placeholder="110 00" autocomplete="postal-code" style="width:100%;">
+            </div>
+          </div>
+          <div>
+            <label for="shipping">Způsob doručení *</label>
+            <select id="shipping" style="width:100%;" aria-label="Zvolte způsob doručení" onchange="onShippingChange(this.value)">
+              <optgroup label="📦 Zásilkovna">
+                <option value="zasilkovna" selected>Zásilkovna — výdejní místo (79 Kč, 1–3 dny) ⭐ Nejoblíbenější</option>
+                <option value="zasilkovna_home">Zásilkovna — doručení domů (119 Kč, 2–3 dny)</option>
+              </optgroup>
+              <optgroup label="🚚 Kurýrní doručení">
+                <option value="ppl">PPL — doručení domů (129 Kč, 1–2 dny)</option>
+                <option value="dpd">DPD — doručení domů, Predict SMS (139 Kč, 1–2 dny)</option>
+                <option value="ceska_posta">Česká pošta — Balík Do ruky (99 Kč, 2–4 dny)</option>
+                <option value="ceska_posta_box">Česká pošta — Balík Na poštu (79 Kč, 2–4 dny)</option>
+              </optgroup>
+              <optgroup label="⚡ Expres">
+                <option value="dhl_express">DHL Express — garantované do 2. dne (299 Kč)</option>
+              </optgroup>
+              <optgroup label="🏠 Vyzvednutí">
+                <option value="pickup">Osobní odběr Night City — Dlouhá 15 (Zdarma)</option>
+              </optgroup>
+            </select>
+            <div id="delivery-date" style="font-size:12px;color:#c8a96a;margin-top:6px;"></div>
+          </div>
+
+          <!-- Coupon code -->
+          <div>
+            <label for="coupon-code">Slevový kód</label>
+            <div style="display:flex;gap:8px;">
+              <input id="coupon-code" type="text" placeholder="Např. VITEJ10" style="flex:1;text-transform:uppercase;letter-spacing:1px;"
+                onkeypress="if(event.key==='Enter'){event.preventDefault();applyCoupon();}">
+              <button onclick="applyCoupon()" class="btn-secondary" style="padding:10px 16px;white-space:nowrap;font-size:13px;">Uplatnit</button>
+            </div>
+            <div id="coupon-result" style="margin-top:6px;font-size:13px;"></div>
+          </div>
+
+          <!-- Gift wrap -->
+          <div style="padding:14px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="checkbox" id="gift-wrap" style="width:18px;height:18px;cursor:pointer;accent-color:#c8a96a;" aria-label="Přidat dárkové balení">
+              <label for="gift-wrap" style="cursor:pointer;font-size:14px;color:#ccc;margin:0;">🎁 Dárkové balení <span id="gift-wrap-price" style="display:none;color:#c8a96a;font-size:12px;">+39 Kč</span></label>
+            </div>
+            <div id="gift-message-field" style="display:none;margin-top:10px;">
+              <input id="gift-message" type="text" placeholder="Dárkový vzkaz (volitelné)..." style="width:100%;padding:9px;font-size:13px;">
+            </div>
+          </div>
+
+          <!-- Charity round-up -->
+          <div style="padding:12px 14px;background:rgba(79,204,79,0.05);border-radius:8px;border:1px solid rgba(79,204,79,0.15);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="checkbox" id="charity-roundup" style="width:16px;height:16px;cursor:pointer;accent-color:#4f4;" aria-label="Zaokrouhlit na charitu">
+              <label for="charity-roundup" style="cursor:pointer;font-size:13px;color:#ccc;margin:0;">🌱 Zaokrouhlit na charitu — drobné půjdou na vysazování stromů</label>
+            </div>
+          </div>
+
+          <div>
+            <label for="note">Poznámka k objednávce</label>
+            <textarea id="note" rows="2" placeholder="Doplňující informace..." style="width:100%;"></textarea>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;padding:14px;background:#111;border-radius:8px;border:1px solid #1e1e1e;font-size:13px;color:#666;line-height:1.9;">
+          <div>🔒 Vaše údaje jsou chráněny šifrováním SSL.</div>
+          <div>📧 Potvrzení objednávky dostanete emailem.</div>
+          <div>↩️ Vrácení zboží do 14 dní bez udání důvodu.</div>
+        </div>
+
+        <!-- ─── PLATEBNÍ METODA ─── -->
+        <div style="margin-top:20px;">
+          <label style="font-weight:600;display:block;margin-bottom:12px;">💳 Způsob platby</label>
+          <div style="display:flex;flex-direction:column;gap:8px;" id="payment-method-selector">
+
+            <label id="pay-card-label" class="payment-option selected" onclick="selectPayment('card')" style="cursor:pointer;padding:14px 16px;background:rgba(200,169,106,0.06);border:2px solid #c8a96a;border-radius:8px;display:flex;align-items:center;gap:12px;">
+              <input type="radio" name="payment" value="card" checked style="accent-color:#c8a96a;width:16px;height:16px;">
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:14px;">💳 Platební karta</div>
+                <div style="font-size:12px;color:#777;">Visa · Mastercard · Amex · Apple Pay · Google Pay</div>
+              </div>
+              <div style="display:flex;gap:4px;font-size:18px;">💳🍎</div>
+            </label>
+
+            <label id="pay-transfer-label" class="payment-option" onclick="selectPayment('transfer')" style="cursor:pointer;padding:14px 16px;background:#1a1a1a;border:2px solid #2a2a2a;border-radius:8px;display:flex;align-items:center;gap:12px;">
+              <input type="radio" name="payment" value="transfer" style="accent-color:#c8a96a;width:16px;height:16px;">
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:14px;">🏦 Bankovní převod</div>
+                <div style="font-size:12px;color:#777;">Platba před expedicí · 1–2 pracovní dny</div>
+              </div>
+            </label>
+
+            <label id="pay-cod-label" class="payment-option" onclick="selectPayment('cod')" style="cursor:pointer;padding:14px 16px;background:#1a1a1a;border:2px solid #2a2a2a;border-radius:8px;display:flex;align-items:center;gap:12px;">
+              <input type="radio" name="payment" value="cod" style="accent-color:#c8a96a;width:16px;height:16px;">
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:14px;">💵 Dobírka</div>
+                <div style="font-size:12px;color:#777;">Platba při převzetí · +30 Kč poplatek</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- ─── ZADÁNÍ KARTY ─── -->
+        <div id="stripe-card-section" style="margin-top:16px;">
+          <label style="font-size:13px;color:#999;margin-bottom:10px;display:block;">Údaje platební karty</label>
+
+          <!-- Card number -->
+          <div style="margin-bottom:10px;">
+            <label for="card-number" style="font-size:12px;color:#777;margin-bottom:4px;display:block;">Číslo karty *</label>
+            <div style="position:relative;">
+              <input id="card-number" type="text" inputmode="numeric" autocomplete="cc-number"
+                placeholder="1234 5678 9012 3456" maxlength="19"
+                oninput="formatCardNumber(this)"
+                style="width:100%;padding:12px 48px 12px 14px;border:1px solid #444;border-radius:8px;background:#111;color:#fff;font-size:15px;font-family:monospace;letter-spacing:1px;transition:border-color 0.2s;"
+                onfocus="this.style.borderColor='#c8a96a'" onblur="this.style.borderColor='#444'">
+              <span id="card-type-icon" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:22px;pointer-events:none;">💳</span>
+            </div>
+          </div>
+
+          <!-- Name on card -->
+          <div style="margin-bottom:10px;">
+            <label for="card-name" style="font-size:12px;color:#777;margin-bottom:4px;display:block;">Jméno na kartě *</label>
+            <input id="card-name" type="text" autocomplete="cc-name"
+              placeholder="JAN NOVÁK"
+              oninput="this.value=this.value.toUpperCase()"
+              style="width:100%;padding:12px 14px;border:1px solid #444;border-radius:8px;background:#111;color:#fff;font-size:14px;font-family:monospace;letter-spacing:1px;transition:border-color 0.2s;"
+              onfocus="this.style.borderColor='#c8a96a'" onblur="this.style.borderColor='#444'">
+          </div>
+
+          <!-- Expiry + CVV -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <label for="card-expiry" style="font-size:12px;color:#777;margin-bottom:4px;display:block;">Platnost (MM/RR) *</label>
+              <input id="card-expiry" type="text" inputmode="numeric" autocomplete="cc-exp"
+                placeholder="12/28" maxlength="5"
+                oninput="formatExpiry(this)"
+                style="width:100%;padding:12px 14px;border:1px solid #444;border-radius:8px;background:#111;color:#fff;font-size:15px;font-family:monospace;letter-spacing:2px;transition:border-color 0.2s;"
+                onfocus="this.style.borderColor='#c8a96a'" onblur="this.style.borderColor='#444'">
+            </div>
+            <div>
+              <label for="card-cvv" style="font-size:12px;color:#777;margin-bottom:4px;display:block;">CVV / CVC *</label>
+              <div style="position:relative;">
+                <input id="card-cvv" type="text" inputmode="numeric" autocomplete="cc-csc"
+                  placeholder="123" maxlength="4"
+                  oninput="this.value=this.value.replace(/\D/g,'')"
+                  style="width:100%;padding:12px 40px 12px 14px;border:1px solid #444;border-radius:8px;background:#111;color:#fff;font-size:15px;font-family:monospace;letter-spacing:2px;transition:border-color 0.2s;"
+                  onfocus="this.style.borderColor='#c8a96a'" onblur="this.style.borderColor='#444'">
+                <span title="3 číslice na zadní straně karty (Amex: 4 na přední)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:#555;cursor:help;font-size:16px;">ℹ️</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="card-errors" style="color:#f44;font-size:12px;margin-top:8px;min-height:16px;"></div>
+
+          <!-- Security badges -->
+          <div style="display:flex;gap:10px;align-items:center;margin-top:12px;padding:10px 12px;background:rgba(79,204,79,0.05);border-radius:6px;border:1px solid rgba(79,204,79,0.1);">
+            <span style="font-size:16px;">🔒</span>
+            <div style="font-size:11px;color:#555;line-height:1.6;">
+              Šifrováno 256-bit SSL · PCI DSS compliant · Údaje nejsou ukládány<br>
+              <span style="color:#777;">Přijímáme: Visa · Mastercard · Maestro · American Express</span>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:4px;font-size:18px;">💳🔐</div>
+          </div>
+        </div>
+
+        <!-- Bank transfer details (hidden by default) -->
+        <div id="bank-transfer-details" style="display:none;margin-top:16px;padding:16px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;font-size:13px;line-height:2;">
+          <div style="font-weight:600;margin-bottom:8px;">Platební údaje:</div>
+          <div>🏦 Komerční banka · č.ú. <strong>1234567890/0100</strong></div>
+          <div>💰 Částka: <strong id="bank-amount">—</strong></div>
+          <div>📋 VS: <strong>Číslo objednávky (zasláno emailem)</strong></div>
+          <div style="color:#777;font-size:12px;margin-top:6px;">Zboží expedujeme po přijetí platby (1–2 pracovní dny).</div>
+        </div>
+
+        <!-- COD info (hidden) -->
+        <div id="cod-details" style="display:none;margin-top:12px;padding:12px 14px;background:rgba(250,160,0,0.07);border-radius:8px;border:1px solid rgba(250,160,0,0.2);font-size:13px;color:#ccc;">
+          💵 Platíte přímo přepravci při převzetí zásilky. K ceně objednávky je připočten poplatek <strong style="color:#fa0;">+30 Kč</strong>.
+        </div>
+
+        <input type="hidden" id="selected-payment-method" value="card">
+
+        <button onclick="submitOrder()" class="btn-primary" style="width:100%;padding:15px;font-size:16px;margin-top:20px;" aria-label="Potvrdit a odeslat objednávku">
+          ✓ Potvrdit objednávku
+        </button>
+      </div>
+
+      <!-- RIGHT: Summary -->
+      <div>
+        <h2 style="font-size:17px;font-weight:700;margin-bottom:20px;color:#c8a96a;">🛒 Vaše objednávka</h2>
+        <div id="summary"></div>
+
+        <div style="margin-top:16px;padding:14px;background:#111;border-radius:8px;border:1px solid #1e1e1e;font-size:13px;color:#666;line-height:1.9;">
+          <div>✅ Platba při doručení nebo bankovním převodem</div>
+          <div>↩️ Vrácení do 14 dní</div>
+          <div>📞 Podpora: +420 777 123 456</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ── Card input formatting & validation ───────────────────────
+function formatCardNumber(input) {
+  var v = input.value.replace(/[^0-9]/g, '').slice(0, 16);
+  input.value = v.replace(/(.{4})/g, '$1 ').trim();
+  var icon = document.getElementById('card-type-icon');
+  if (!icon) return;
+  if (v.startsWith('4'))                        { icon.textContent = '💙'; }
+  else if (v.startsWith('5')||v.startsWith('2')){ icon.textContent = '🟠'; }
+  else if (v.startsWith('3'))                   { icon.textContent = '🟢'; }
+  else if (v.startsWith('6'))                   { icon.textContent = '🔶'; }
+  else                                          { icon.textContent = '💳'; }
+}
+window.formatCardNumber = formatCardNumber;
+
+function formatExpiry(input) {
+  var v = input.value.replace(/[^0-9]/g,'').slice(0,4);
+  if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+  input.value = v;
+}
+window.formatExpiry = formatExpiry;
+
+function validateCard() {
+  var num    = (document.getElementById('card-number')?.value || '').replace(/[^0-9]/g,'');
+  var name   = (document.getElementById('card-name')?.value || '').trim();
+  var expiry = document.getElementById('card-expiry')?.value || '';
+  var cvv    = document.getElementById('card-cvv')?.value || '';
+  var errEl  = document.getElementById('card-errors');
+  if (num.length < 13)   { if(errEl) errEl.textContent='❌ Neplatné číslo karty'; return false; }
+  if (!name)             { if(errEl) errEl.textContent='❌ Zadejte jméno na kartě'; return false; }
+  if (expiry.length < 5) { if(errEl) errEl.textContent='❌ Neplatná platnost MM/RR'; return false; }
+  var parts = expiry.split('/');
+  var mm = parseInt(parts[0]||0), yy = parseInt(parts[1]||0);
+  var now = new Date();
+  if (new Date(2000+yy, mm-1) < new Date(now.getFullYear(), now.getMonth())) {
+    if(errEl) errEl.textContent='❌ Platnost karty vypršela'; return false;
+  }
+  if (cvv.length < 3) { if(errEl) errEl.textContent='❌ Neplatný CVV'; return false; }
+  if(errEl) errEl.textContent='';
+  return true;
+}
+window.validateCard = validateCard;
+
+function onShippingChange(method) {
+  if (typeof renderSummary === 'function') renderSummary(method);
+  if (typeof getDeliveryEstimate === 'function') {
+    var dateEl = document.getElementById('delivery-date');
+    if (dateEl) dateEl.textContent = '📅 ' + getDeliveryEstimate(method);
+  }
+}
+window.onShippingChange = onShippingChange;
+
+// ── Payment method selection ─────────────────────────────────
+function selectPayment(method) {
+  document.getElementById('selected-payment-method').value = method;
+  ['card','transfer','cod'].forEach(m => {
+    var el = document.getElementById('pay-' + m + '-label');
+    if (el) {
+      el.style.background   = m === method ? 'rgba(200,169,106,0.06)' : '#1a1a1a';
+      el.style.borderColor  = m === method ? '#c8a96a' : '#2a2a2a';
+    }
+  });
+  // Show/hide Stripe section
+  var stripeSection  = document.getElementById('stripe-card-section');
+  var bankSection    = document.getElementById('bank-transfer-details');
+  var codSection     = document.getElementById('cod-details');
+  if (stripeSection)  stripeSection.style.display  = method === 'card'     ? 'block' : 'none';
+  if (bankSection)    bankSection.style.display     = method === 'transfer' ? 'block' : 'none';
+  if (codSection)     codSection.style.display      = method === 'cod'      ? 'block' : 'none';
+
+  // Update bank amount display
+  if (method === 'transfer') {
+    var total = typeof Cart !== 'undefined' ? Cart.getTotal() : 0;
+    var amountEl = document.getElementById('bank-amount');
+    if (amountEl && total) amountEl.textContent = formatPrice(total) + ' Kč';
+  }
+
+  // Recalculate summary (COD adds +30 Kč)
+  var shippingEl = document.getElementById('shipping');
+  if (typeof renderSummary === 'function') renderSummary(shippingEl?.value || 'zasilkovna');
+}
+window.selectPayment = selectPayment;
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof loadCheckout === 'function') loadCheckout();
+  // Initial delivery estimate for default option
+  if (typeof getDeliveryEstimate === 'function') {
+    var dateEl = document.getElementById('delivery-date');
+    if (dateEl) dateEl.textContent = '📅 ' + getDeliveryEstimate('zasilkovna');
+  }
+  if (typeof renderBreadcrumb === 'function') {
+    var el = document.getElementById('checkout-breadcrumb');
+    if (el) el.innerHTML = renderBreadcrumb([{label:'Domů',href:'/'},{label:'Košík',href:'/cart'},{label:'Pokladna'}]);
+  }
+  // Gift message toggle
+  var giftChk = document.getElementById('gift-wrap');
+  var giftField = document.getElementById('gift-message-field');
+  if (giftChk && giftField) {
+    giftChk.addEventListener('change', () => {
+      giftField.style.display = giftChk.checked ? 'block' : 'none';
+    });
+  }
+});
+</script>

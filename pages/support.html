@@ -1,0 +1,144 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:900px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Zákaznická podpora</span></nav>
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">🎫 Zákaznická podpora</h1>
+    <img src="/images/pokebowl-lifestyle-desk.jpg" alt="Pokeball na stole" style="width:100%;max-height:240px;object-fit:cover;border-radius:10px;margin:14px 0 20px;" loading="lazy">
+    <p style="color:#777;margin-bottom:28px;font-size:15px;">Vytvořte ticket a my se vám ozveme do 24 hodin.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;" class="grid-contact">
+      <!-- New ticket -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;">
+        <h2 style="font-size:17px;font-weight:700;margin-bottom:18px;">📩 Nový ticket</h2>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div><label>Jméno *</label><input id="ticket-name" type="text" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Email *</label><input id="ticket-email" type="email" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Číslo objednávky</label><input id="ticket-order" type="text" placeholder="ORD-..." style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Kategorie</label>
+            <select id="ticket-category" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+              <option value="general">Obecný dotaz</option>
+              <option value="order">Objednávka</option>
+              <option value="return">Vrácení / reklamace</option>
+              <option value="shipping">Doručení</option>
+              <option value="product">Produkt</option>
+              <option value="payment">Platba</option>
+            </select>
+          </div>
+          <div><label>Priorita</label>
+            <select id="ticket-priority" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+              <option value="low">🟢 Nízká</option>
+              <option value="medium" selected>🟡 Střední</option>
+              <option value="high">🔴 Vysoká</option>
+            </select>
+          </div>
+          <div><label>Předmět *</label><input id="ticket-subject" type="text" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Popis *</label><textarea id="ticket-body" rows="4" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;resize:vertical;"></textarea></div>
+          <button onclick="submitTicket()" class="btn-primary" style="padding:12px;font-size:14px;">Odeslat ticket</button>
+        </div>
+      </div>
+
+      <!-- Track ticket + FAQ -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px;">
+          <h2 style="font-size:16px;font-weight:700;margin-bottom:14px;">🔍 Sledovat ticket</h2>
+          <div style="display:flex;gap:8px;">
+            <input id="ticket-track-id" type="text" placeholder="TKT-..." style="flex:1;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+            <button onclick="trackTicket()" class="btn-primary" style="padding:10px 16px;white-space:nowrap;">Hledat</button>
+          </div>
+          <div id="ticket-track-result" style="margin-top:12px;"></div>
+        </div>
+
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px;">
+          <h2 style="font-size:16px;font-weight:700;margin-bottom:14px;">⚡ Rychlé odpovědi</h2>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button onclick="goTo('/faq')" class="btn-secondary" style="padding:10px;text-align:left;font-size:13px;">❓ FAQ — Časté dotazy</button>
+            <button onclick="goTo('/track-order')" class="btn-secondary" style="padding:10px;text-align:left;font-size:13px;">📦 Sledovat objednávku</button>
+            <button onclick="goTo('/live-chat')" class="btn-secondary" style="padding:10px;text-align:left;font-size:13px;">💬 Live chat (Po–Pá 9–17)</button>
+            <a href="mailto:info@drobnostik.cz" class="btn-secondary" style="padding:10px;text-align:left;font-size:13px;display:block;text-decoration:none;">✉️ info@drobnostik.cz</a>
+            <a href="tel:+420777123456" class="btn-secondary" style="padding:10px;text-align:left;font-size:13px;display:block;text-decoration:none;">📞 +420 777 123 456</a>
+          </div>
+        </div>
+
+        <div style="background:#111;border-radius:10px;padding:16px;border:1px solid #1e1e1e;font-size:13px;color:#666;line-height:1.9;">
+          <div>⏱️ Průměrná odpověď: do 4 hodin (pracovní dny)</div>
+          <div>🕘 Provozní doba: Po–Pá 9:00–17:00</div>
+          <div>🎫 Každý ticket dostane unikátní číslo TKT-XXXXXX</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function submitTicket() {
+  var name = document.getElementById('ticket-name')?.value?.trim();
+  var email = document.getElementById('ticket-email')?.value?.trim();
+  var subject = document.getElementById('ticket-subject')?.value?.trim();
+  var body = document.getElementById('ticket-body')?.value?.trim();
+  if (!name || !email || !subject || !body) { showToast('⚠️ Vyplňte povinná pole'); return; }
+  if (!email.includes('@')) { showToast('⚠️ Neplatný email'); return; }
+
+  var ticketId = 'TKT-' + Date.now().toString().slice(-6);
+  try {
+    var sb = await getSupabase();
+    await sb.from('support_tickets').insert([{
+      ticket_number: ticketId,
+      customer_name: name,
+      customer_email: email,
+      order_number: document.getElementById('ticket-order')?.value || null,
+      category: document.getElementById('ticket-category')?.value || 'general',
+      priority: document.getElementById('ticket-priority')?.value || 'medium',
+      subject, body, status: 'open'
+    }]);
+  } catch(e) {}
+
+  showToast(`✓ Ticket ${ticketId} byl odeslán! Odpovíme do 24 hod.`);
+  // Show mini satisfaction survey
+  setTimeout(() => {
+    var survey = document.createElement('div');
+    survey.style.cssText = 'position:fixed;bottom:80px;right:24px;background:#1a1a1a;border:1px solid rgba(200,169,106,0.2);border-radius:10px;padding:20px;z-index:9000;max-width:280px;animation:slideInToast 0.3s ease;';
+    survey.innerHTML = `
+      <div style="font-weight:600;font-size:14px;margin-bottom:10px;">Jak hodnotíte naši podporu?</div>
+      <div style="display:flex;gap:8px;justify-content:center;font-size:24px;margin-bottom:10px;">
+        ${['😞','😐','😊','😄','🤩'].map((e,i)=>`<button onclick="rateSupportExperience(${i+1});this.parentElement.parentElement.parentElement?.remove()" style="background:none;border:none;cursor:pointer;font-size:24px;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'" title="${i+1}/5">${e}</button>`).join('')}
+      </div>
+      <button onclick="this.parentElement.remove()" style="width:100%;padding:6px;background:none;border:none;color:#555;cursor:pointer;font-size:12px;">Přeskočit</button>`;
+    document.body.appendChild(survey);
+  }, 2000);
+  ['ticket-name','ticket-email','ticket-order','ticket-subject','ticket-body'].forEach(id => {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+}
+
+async function trackTicket() {
+  var id = document.getElementById('ticket-track-id')?.value?.trim();
+  var res = document.getElementById('ticket-track-result');
+  if (!id || !res) return;
+
+  try {
+    var sb = await getSupabase();
+    var { data: ticket } = await sb.from('support_tickets').select('*').eq('ticket_number', id.toUpperCase()).single();
+    if (ticket) {
+      var statusColors = { open:'#fa0', in_progress:'#4af', resolved:'#4f4', closed:'#777' };
+      res.innerHTML = `<div style="padding:12px;background:#111;border-radius:6px;border:1px solid #222;">
+        <div style="font-family:monospace;color:#c8a96a;font-weight:700;margin-bottom:6px;">${escapeHtml(ticket.ticket_number)}</div>
+        <div style="font-size:13px;color:#ccc;">${escapeHtml(ticket.subject)}</div>
+        <div style="margin-top:8px;"><span style="color:${statusColors[ticket.status]||'#999'};font-size:12px;font-weight:600;">● ${ticket.status}</span></div>
+      </div>`;
+    } else {
+      res.innerHTML = '<div style="color:#f44;font-size:13px;">Ticket nenalezen</div>';
+    }
+  } catch(e) {
+    res.innerHTML = '<div style="color:#f44;font-size:13px;">Chyba při hledání</div>';
+  }
+}
+
+function loadSupport() { /* static page, nothing to load */ }
+function rateSupportExperience(score) {
+  showToast(score >= 4 ? '🎉 Děkujeme za hodnocení!' : 'Děkujeme! Budeme se zlepšovat.');
+  try { getSupabase().from('support_ratings').insert([{ score }]); } catch(e) {}
+}
+window.rateSupportExperience = rateSupportExperience;
+window.submitTicket = submitTicket;
+window.trackTicket = trackTicket;
+window.loadSupport = loadSupport;
+</script>

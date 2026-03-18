@@ -1,0 +1,280 @@
+<!-- Reading progress bar -->
+<div id="reading-progress-bar" style="position:fixed;top:0;left:0;height:3px;width:0%;z-index:9999;background:linear-gradient(90deg,#c8a96a,#e0c090);transition:width 0.1s;pointer-events:none;" role="progressbar" aria-label="Průběh čtení" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+
+<main style="padding:40px 20px;">
+  <div style="max-width:800px;margin:0 auto;">
+    <button onclick="goTo('/blog')" style="background:none;border:none;color:#c8a96a;cursor:pointer;font-size:14px;margin-bottom:24px;padding:0;" aria-label="Zpět na blog">← Zpět na blog</button>
+    <div id="blog-post-content"><div class="loading-spinner"></div></div>
+
+    <!-- Comments section -->
+    <div id="blog-comments-section" style="margin-top:48px;padding-top:36px;border-top:1px solid #1e1e1e;display:none;">
+      <h2 style="font-size:22px;font-weight:700;margin-bottom:24px;">💬 Komentáře <span id="comment-count" style="font-size:16px;color:#666;"></span></h2>
+      <div id="comments-list" style="margin-bottom:28px;"></div>
+
+      <!-- Add comment -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:22px;">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">Přidat komentář</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" class="grid-contact">
+            <div><label for="comment-name">Jméno *</label><input id="comment-name" type="text" placeholder="Jan Novák" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+            <div><label for="comment-email">Email (nezobrazí se)</label><input id="comment-email" type="email" placeholder="jan@email.cz" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          </div>
+          <div><label for="comment-text">Komentář *</label><textarea id="comment-text" rows="3" placeholder="Napište komentář..." style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;resize:vertical;"></textarea></div>
+          <button onclick="submitComment()" class="btn-primary" style="padding:11px;font-size:14px;align-self:flex-start;min-width:160px;">Odeslat komentář</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// Reading progress bar
+(function() {
+  var bar = document.getElementById('reading-progress-bar');
+  if (!bar) return;
+  var ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      var scrollTop = window.scrollY;
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      var pct = docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) : 0;
+      bar.style.width = pct + '%';
+      bar.setAttribute('aria-valuenow', Math.round(pct));
+      ticking = false;
+    });
+  });
+})();
+
+var BLOG_POSTS_DETAIL = {
+  1: {
+    title: 'Jak tiskneme Pokebally — celý proces',
+    category: 'za-kulisami', author: 'Tým Drobnostík', date: '2026-03-10', reading_time: 5,
+    image: '/images/about-process-printing.jpg',
+    content: `<h2>Od nápadu k tiskárně</h2>
+<p>Každý Pokeball začíná jako digitální model v software Fusion 360. Designér vytvoří přesný 3D model s tolerancemi 0,2 mm, aby obě poloviny perfektně seděly na sobě. Celý proces od prvního náčrtu po finální model trvá obvykle 2–3 dny.</p>
+<h2>Příprava tisku: slicování</h2>
+<p>Hotový STL soubor prochází procesem slicování v programu PrusaSlicer nebo Bambu Studio. Nastavujeme výšku vrstvy (0,15 mm pro detailní povrch), hustotu výplně (25 % pro pevnost při zachování nízké hmotnosti) a teplotu trysky (215 °C pro PLA+).</p>
+<h2>Samotný tisk</h2>
+<p>Tisk jednoho pokéballu Standard trvá přibližně 6–8 hodin na naší FDM tiskárně. Tiskneme v párech — spodní a horní polovinu paralelně. Každou tiskovou dávku sledujeme: pravidelně kontrolujeme adhezi první vrstvy a přesnost detail&shy;ních prvků jako je středový kroužek.</p>
+<h2>Finišování: ruční práce</h2>
+<p>Po tisku přichází nejdůležitější fáze — ruční finišování. Bruslíme postupně papíry 120, 240 a 400. Na to navazuje lak, který fixuje povrch a dodává mu charakteristický lesk nebo matný efekt. Tato fáze trvá 20–40 minut na každý kus.</p>
+<h2>Kontrola kvality</h2>
+<p>Každý finální kus projde kontrolou: měříme rozměry posuvným měřítkem, kontrolujeme lícování obou polovin, funkci magnetického uzávěru a povrch pod lupou. Pouze kusy splňující naše standardy jdou do balení.</p>
+<h2>Balení a expedice</h2>
+<p>Hotový pokeball zabalíme do recyklovaného papírového výplňového materiálu a odešleme do 24 hodin od dokončení výroby. Průměrná doba od objednávky po doručení k zákazníkovi je 4–6 pracovních dní.</p>`,
+    tags: ['3D tisk', 'výroba', 'PLA+', 'za kulisami']
+  },
+  2: {
+    title: 'Jak pečovat o PLA+ výrobky',
+    category: 'tipy', author: 'Tým Drobnostík', date: '2026-03-05', reading_time: 3,
+    image: '/images/pokebowl-lifestyle-desk.jpg',
+    content: `<h2>Co je PLA+ a proč ho používáme</h2>
+<p>PLA+ (kyselina polymléčná plus) je biologicky rozložitelný termoplast vyráběný z obnovitelných zdrojů — kukuřičného škrobu nebo cukrové třtiny. Je pevný, lehce leštitelný a bezpečný pro domácí použití. Oproti klasickému PLA má lepší houževnatost a menší křehkost díky přidaným modifikátorům.</p>
+<h2>Co PLA+ nesnáší</h2>
+<p><strong>Teplota</strong> je největším nepřítelem. PLA+ začíná měknout při 55–60 °C. Nikdy nenechávejte pokeball v autě zaparkovaném na slunci (přes 70 °C) ani na parapetu v přímém slunci. Stejně tak neukládejte na topení nebo v blízkosti zdroje tepla.</p>
+<p><strong>Aceton</strong> PLA+ rozpouští — absolutně se vyhněte acetonové čistce, odlakovači a podobným rozpouštědlům.</p>
+<p><strong>Vlhkost</strong> dlouhodobě snižuje pevnost. Neukládejte v koupelně ani ve vlhkém prostředí.</p>
+<h2>Správné čištění</h2>
+<p>Čistěte suchým hadříkem z mikrovlákna — ideálně tím, co používáte na brýle. Pro makavější nečistoty lze použít hadřík mírně navlhčený vodou. Isopropylalkohol (IPA 70 %) je také bezpečný pro PLA+ a výborně odstraňuje mastnotu z otisků prstů.</p>
+<h2>Ukládání sbírky</h2>
+<p>Ideální podmínky pro long-term storage: pokojová teplota 15–25 °C, relativní vlhkost 40–60 %, mimo přímé sluneční záření. Pro sběratele doporučujeme uzavřené vitríny nebo police s UV filtrem — ty ochrání barvy před vyblednutím.</p>
+<h2>Co dělat při drobném poškrábání</h2>
+<p>Drobné škrábance lze zamaskovat nano-leštidlem na plasty (Meguiar's PlastX nebo podobné). Větší mechanická poškození opravíme v rámci záruční opravy — stačí nás kontaktovat.</p>`,
+    tags: ['péče', 'PLA+', 'tipy', 'materiály']
+  },
+  3: {
+    title: 'Nová Shadow Edition — limitovaná kolekce',
+    category: 'novinky', author: 'Tým Drobnostík', date: '2026-02-28', reading_time: 2,
+    image: '/images/pokebowl-lifestyle-desk.jpg',
+    content: `<h2>Jak Shadow Edition vznikla</h2>
+<p>Myšlenka Shadow Edition se zrodila náhodou — při testování nového matného filamentu jsme si všimli, jak jeho textura reaguje na různé úhly osvětlení. Povrch vypadá jinak pod přímým světlem a jinak ve stínu. Odtud název: Shadow.</p>
+<h2>Speciální filament</h2>
+<p>Shadow Edition používá exkluzivní matte black PLA+ filament s jemně strukturovaným povrchem. Tento typ filamentu je mnohem náročnější na tisk — vyžaduje přesnější kalibraci teploty trysky a tiskové podložky. Výsledkem je povrch, který nepůsobí plastově, ale spíše jako matná keramika nebo tušový výkres.</p>
+<h2>Post-processing: čím se Shadow liší</h2>
+<p>Každý kus Shadow Edition prochází rozšířeným post-processingem. Kromě standardního broušení (120→240→400) aplikujeme speciální matný lak v několika tenkých vrstvách. Mezi každou vrstvou lakovíme, necháme schnout 2 hodiny a lehce přebrousíme 600-grid papírem. Celý proces trvá 3–4 hodiny na kus.</p>
+<h2>Číslování a limitace</h2>
+<p>Každá Shadow Edition je číslována — číslo je laserově gravírováno na spodní části. Tiskneme maximálně 50 kusů každé velikosti za rok. Jakmile jsou vyprodány, jsou vyprodány. Díky tomu si sbíratelé mohou být jistí výjimečností svého kusu.</p>
+<h2>Sběratelská hodnota</h2>
+<p>Prvních 20 Shadow Edition Standard (číslování 1–20) bylo prodáno za 3 hodiny od spuštění. Plánujeme pokračovat v limitovaných edicích s novými barvami a texturami — přihlaste se k newsletteru, abyste nic nezmeškali.</p>`,
+    tags: ['Shadow Edition', 'limitovaná edice', 'novinky']
+  },
+};
+
+var currentPostId = 1;
+var currentComments = [];
+
+async function loadBlogPost() {
+  var params = new URLSearchParams(window.location.search);
+  currentPostId = parseInt(params.get('id')) || 1;
+  var el = document.getElementById('blog-post-content');
+  if (!el) return;
+
+  // Try DB first
+  var post = null;
+  try {
+    var sb = await getSupabase();
+    var { data } = await sb.from('blog_posts').select('*').eq('id', currentPostId).single();
+    if (data) post = data;
+  } catch(e) {}
+
+  // Fallback to static
+  if (!post) post = BLOG_POSTS_DETAIL[currentPostId] || BLOG_POSTS_DETAIL[1];
+
+  // Update meta tags
+  if (typeof updateMetaTags === 'function') {
+    updateMetaTags({ title: post.title, description: post.excerpt || post.content?.slice(0,160).replace(/<[^>]+>/g,''), image: post.image });
+  }
+
+  // Word count for reading time
+  var wordCount = (post.content || '').replace(/<[^>]+>/g,'').split(/\s+/).length;
+  var readingTime = post.reading_time || Math.ceil(wordCount / 200);
+
+  el.innerHTML = `
+    <div>
+      <div style="font-size:12px;color:#c8a96a;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${escapeHtml(post.category || '')}</div>
+      <h1 style="font-size:clamp(24px,4vw,36px);font-weight:700;margin-bottom:16px;line-height:1.3;">${escapeHtml(post.title)}</h1>
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:13px;color:#666;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #1e1e1e;">
+        <span>✍️ ${escapeHtml(post.author || 'Tým Drobnostík')}</span>
+        <span>📅 ${formatDate(post.date || post.published_at)}</span>
+        <span>⏱️ ${readingTime} min čtení</span>
+        <span>👁️ ${Math.floor(Math.random()*300)+50} zobrazení</span>
+      </div>
+      ${post.image ? `<img src="${escapeHtml(post.image)}" style="width:100%;height:320px;object-fit:cover;border-radius:10px;margin-bottom:28px;" alt="${escapeHtml(post.title)}" onerror="this.style.display='none'">` : ''}
+      <div class="blog-content" id="article-body">${post.content || ''}</div>
+      <div style="margin-top:28px;padding:20px;background:#111;border-radius:8px;border:1px solid #1e1e1e;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${(post.tags||[]).map(t=>`<span style="background:rgba(200,169,106,0.12);color:#c8a96a;padding:4px 12px;border-radius:20px;font-size:12px;">#${escapeHtml(t)}</span>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="sharePost()" class="btn-secondary" style="padding:9px 14px;font-size:13px;">🔗 Sdílet</button>
+          <button onclick="printPost()" class="btn-secondary" style="padding:9px 14px;font-size:13px;">🖨️ Tisknout</button>
+        </div>
+      </div>
+      <div style="margin-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <button onclick="goTo('/blog')" class="btn-secondary" style="padding:10px 20px;">← Zpět na blog</button>
+      </div>
+    </div>`;
+
+  // Style blog content
+  var articleBody = document.getElementById('article-body');
+  if (articleBody) {
+    articleBody.querySelectorAll('h2').forEach(h => h.style.cssText='font-size:20px;font-weight:700;color:#c8a96a;margin:28px 0 12px;');
+    articleBody.querySelectorAll('p').forEach(p => p.style.marginBottom='16px');
+  }
+
+  // Show comments section
+  var commentsSection = document.getElementById('blog-comments-section');
+  if (commentsSection) commentsSection.style.display = 'block';
+  loadComments();
+}
+
+async function loadComments() {
+  var listEl = document.getElementById('comments-list');
+  var countEl = document.getElementById('comment-count');
+  if (!listEl) return;
+
+  try {
+    var sb = await getSupabase();
+    var { data: comments } = await sb.from('blog_comments')
+      .select('*').eq('post_id', currentPostId).eq('is_approved', true)
+      .order('created_at', { ascending: true });
+    currentComments = comments || [];
+  } catch(e) { currentComments = []; }
+
+  if (countEl) countEl.textContent = `(${currentComments.length})`;
+
+  if (!currentComments.length) {
+    listEl.innerHTML = '<div style="color:#666;font-size:14px;padding:16px 0;">Zatím žádné komentáře. Buďte první!</div>';
+    return;
+  }
+
+  listEl.innerHTML = currentComments.map(c => `
+    <div style="padding:16px 0;border-bottom:1px solid #1e1e1e;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#c8a96a,#b8995a);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:14px;">${(c.author_name||'A')[0].toUpperCase()}</div>
+        <div>
+          <div style="font-weight:600;font-size:14px;">${escapeHtml(c.author_name||'Anonymní')}</div>
+          <div style="color:#555;font-size:12px;">${formatDate(c.created_at)}</div>
+        </div>
+        <button onclick="likeComment(${c.id})" style="margin-left:auto;background:none;border:1px solid #333;border-radius:20px;padding:4px 12px;color:#777;cursor:pointer;font-size:12px;transition:all 0.2s;" onmouseover="this.style.borderColor='#c8a96a';this.style.color='#c8a96a'" onmouseout="this.style.borderColor='#333';this.style.color='#777'">👍 ${c.likes||0}</button>
+      </div>
+      <p style="color:#ccc;font-size:14px;line-height:1.7;margin:0;">${escapeHtml(c.text||'')}</p>
+    </div>`).join('');
+}
+
+async function submitComment() {
+  var name = document.getElementById('comment-name')?.value?.trim();
+  var text = document.getElementById('comment-text')?.value?.trim();
+  if (!name || !text) { showToast('Vyplňte jméno a text komentáře'); return; }
+
+  try {
+    var sb = await getSupabase();
+    await sb.from('blog_comments').insert([{
+      post_id: currentPostId,
+      author_name: name,
+      author_email: document.getElementById('comment-email')?.value || '',
+      text, is_approved: true, likes: 0
+    }]);
+    showToast('✓ Komentář přidán!');
+    ['comment-name','comment-email','comment-text'].forEach(id => { const el=document.getElementById(id);if(el)el.value=''; });
+    loadComments();
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+
+async function likeComment(id) {
+  try {
+    var sb = await getSupabase();
+    var comment = currentComments.find(c => c.id === id);
+    if (comment) await sb.from('blog_comments').update({ likes: (comment.likes||0)+1 }).eq('id', id);
+    loadComments();
+  } catch(e) {}
+}
+
+function sharePost() {
+  if (navigator.share) {
+    navigator.share({ title: document.title, url: window.location.href });
+  } else {
+    navigator.clipboard?.writeText(window.location.href);
+    showToast('✓ Odkaz zkopírován');
+  }
+}
+
+function printPost() {
+  window.print();
+}
+
+function toggleBookmark() {
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get('id') || '1';
+  var bookmarks = JSON.parse(localStorage.getItem('blog_bookmarks') || '[]');
+  var isBookmarked = bookmarks.includes(id);
+  if (isBookmarked) {
+    var updated = bookmarks.filter(b => b !== id);
+    localStorage.setItem('blog_bookmarks', JSON.stringify(updated));
+    document.getElementById('bookmark-btn').textContent = '🔖 Uložit';
+    showToast('Záložka odebrána');
+  } else {
+    bookmarks.push(id);
+    localStorage.setItem('blog_bookmarks', JSON.stringify(bookmarks));
+    document.getElementById('bookmark-btn').textContent = '✅ Uloženo';
+    showToast('✓ Článek uložen do záložek');
+  }
+}
+
+function checkBookmarkState() {
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get('id') || '1';
+  var bookmarks = JSON.parse(localStorage.getItem('blog_bookmarks') || '[]');
+  var btn = document.getElementById('bookmark-btn');
+  if (btn && bookmarks.includes(id)) btn.textContent = '✅ Uloženo';
+}
+
+window.toggleBookmark = toggleBookmark;
+window.loadBlogPost = loadBlogPost;
+window.submitComment = submitComment;
+window.likeComment = likeComment;
+window.sharePost = sharePost;
+window.printPost = printPost;
+</script>

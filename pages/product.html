@@ -1,0 +1,270 @@
+<main style="padding:20px 20px 40px;">
+  <div style="max-width:1200px;margin:0 auto;">
+
+    <!-- Breadcrumb -->
+    <div id="product-breadcrumb"></div>
+
+    <div id="product-breadcrumb"></div>
+    <button onclick="goTo('/shop')" style="background:none;border:none;color:#c8a96a;cursor:pointer;font-size:14px;margin-bottom:20px;padding:0;display:flex;align-items:center;gap:6px;">← Zpět na obchod</button>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;" class="grid-product">
+
+      <!-- Image column -->
+      <div>
+        <div id="product-img-container" style="background:linear-gradient(135deg,#1a1a1a,#2a2a2a);border-radius:10px;aspect-ratio:1;overflow:hidden;position:relative;border:1px solid rgba(200,169,106,0.1);">
+          <img id="product-image" src="/images/products/pokebowl-black-front.jpg"
+            style="width:100%;height:100%;object-fit:cover;transition:transform 0.3s,opacity 0.25s;"
+            alt="Produkt">
+          <!-- Color swatches overlay -->
+          <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:10px;">
+            <div id="color-buttons-overlay" style="display:flex;gap:8px;flex-wrap:wrap;" role="group" aria-label="Výběr barvy"></div>
+          </div>
+          <!-- Zoom hint -->
+          <div style="position:absolute;top:12px;left:12px;background:rgba(0,0,0,0.5);color:#ccc;font-size:10px;padding:4px 8px;border-radius:4px;pointer-events:none;">🔍 Hover = zoom</div>
+        </div>
+        <!-- View toggle -->
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button onclick="changeProductImage('front')" aria-label="Přední strana" style="flex:1;padding:10px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#ccc;cursor:pointer;font-size:13px;transition:all 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#333'">Přední strana</button>
+          <button onclick="changeProductImage('back')" aria-label="Zadní strana" style="flex:1;padding:10px;background:#1a1a1a;border:1px solid #333;border-radius:6px;color:#ccc;cursor:pointer;font-size:13px;transition:all 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#333'">Zadní strana</button>
+        </div>
+        <!-- Share button -->
+        <button onclick="shareProduct(document.getElementById('product-name')?.textContent, window.location.href)" style="width:100%;margin-top:8px;padding:10px;background:none;border:1px solid #2a2a2a;border-radius:6px;color:#777;cursor:pointer;font-size:13px;transition:all 0.2s;" onmouseover="this.style.borderColor='#c8a96a';this.style.color='#c8a96a'" onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#777'">
+          🔗 Sdílet produkt
+        </button>
+      </div>
+
+      <!-- Details column -->
+      <div>
+        <div id="product-category" style="font-size:12px;color:#c8a96a;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;"></div>
+        <h1 id="product-name" style="font-size:clamp(24px,4vw,34px);font-weight:700;margin:0 0 12px 0;">Načítání...</h1>
+        <p id="product-desc" style="color:#999;line-height:1.8;margin-bottom:20px;font-size:15px;"></p>
+
+        <!-- Stock urgency -->
+        <div id="stock-urgency" style="margin-bottom:16px;font-size:14px;font-weight:600;"></div>
+
+        <!-- Availability -->
+        <div style="padding:12px 16px;background:rgba(26,26,26,0.8);border-radius:6px;border:1px solid #2a2a2a;margin-bottom:20px;">
+          <div id="stock-status" style="font-size:14px;font-weight:600;">Načítání...</div>
+          <div id="stock-urgency" style="font-size:12px;color:#fa0;margin-top:4px;"></div>
+        </div>
+
+        <!-- Size -->
+        <div style="margin-bottom:20px;">
+          <div style="font-size:13px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Velikost</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;" role="group" aria-label="Výběr velikosti">
+            <button data-size="Small" onclick="selectSize('Small')" aria-label="Velikost Small"
+              style="padding:10px 18px;border:2px solid #333;background:transparent;color:#ccc;border-radius:6px;cursor:pointer;font-size:13px;transition:all 0.2s;">Small</button>
+            <button data-size="Standard" onclick="selectSize('Standard')" aria-label="Velikost Standard (výchozí)"
+              style="padding:10px 18px;border:2px solid #c8a96a;background:rgba(200,169,106,0.08);color:#fff;border-radius:6px;cursor:pointer;font-size:13px;">Standard ✓</button>
+            <button data-size="Maxi" onclick="selectSize('Maxi')" aria-label="Velikost Maxi"
+              style="padding:10px 18px;border:2px solid #333;background:transparent;color:#ccc;border-radius:6px;cursor:pointer;font-size:13px;transition:all 0.2s;">Maxi</button>
+          </div>
+          <!-- Size guide -->
+          <button onclick="showSizeGuide()" style="margin-top:8px;background:none;border:none;color:#777;font-size:12px;cursor:pointer;text-decoration:underline;padding:0;" aria-label="Zobrazit tabulku velikostí">📏 Tabulka velikostí</button>
+        </div>
+
+        <!-- Color -->
+        <div style="margin-bottom:24px;">
+          <div style="font-size:13px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Barva: <span id="selected-color-label" style="color:#c8a96a;">Černá</span></div>
+          <div style="display:flex;gap:12px;align-items:center;" role="group" aria-label="Výběr barvy">
+            <div id="color-buttons-detail" style="display:flex;gap:8px;flex-wrap:wrap;" role="group" aria-label="Výběr barvy"></div>
+          </div>
+        </div>
+
+        <!-- Price + qty -->
+        <div style="display:flex;gap:20px;align-items:flex-end;margin-bottom:20px;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Cena</div>
+            <div id="product-price" style="font-size:32px;font-weight:700;color:#c8a96a;">— Kč</div>
+            <div id="installment-info" style="display:none;font-size:12px;color:#777;margin-top:4px;"></div>
+          </div>
+          <div>
+            <label for="quantity" style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.5px;">Počet</label>
+            <input id="quantity" type="number" value="1" min="1" max="99" aria-label="Počet kusů"
+              style="width:80px;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:white;font-size:15px;text-align:center;margin-top:4px;">
+          </div>
+        </div>
+
+        <!-- Delivery estimate -->
+        <div id="delivery-estimate" style="margin-bottom:16px;padding:10px 14px;background:#111;border-radius:6px;border:1px solid #1e1e1e;font-size:13px;color:#777;"></div>
+
+        <!-- Gift wrap + charity -->
+        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#ccc;font-size:13px;padding:8px 12px;background:#111;border:1px solid #2a2a2a;border-radius:6px;">
+            <input type="checkbox" id="gift-wrap" style="cursor:pointer;accent-color:#c8a96a;"> 🎁 Dárkové balení (+39 Kč)
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#ccc;font-size:13px;padding:8px 12px;background:#111;border:1px solid #2a2a2a;border-radius:6px;">
+            <input type="checkbox" id="charity-roundup" style="cursor:pointer;accent-color:#4f4;"> 💚 Zaokrouhlit na charitu
+          </label>
+        </div>
+
+        <!-- CTA -->
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+          <button onclick="addProductToCart()" class="btn-primary" id="add-to-cart-btn"
+            style="flex:1;padding:14px 20px;font-size:15px;min-width:160px;">+ Přidat do košíku</button>
+          <button onclick="shareCurrentProduct()" class="btn-secondary" style="padding:14px 16px;font-size:14px;" title="Sdílet produkt" aria-label="Sdílet produkt">🔗 Sdílet</button>
+          <button onclick="Wishlist.toggle(currentProduct?.id); this.textContent=Wishlist.has(currentProduct?.id)?'❤️ V oblíbených':'🤍 Oblíbené';"
+            class="btn-secondary" style="padding:14px 18px;font-size:14px;" aria-label="Přidat do oblíbených">🤍 Oblíbené</button>
+        </div>
+
+        <!-- Delivery/returns info -->
+        <div style="background:#111;border-radius:8px;padding:16px;border:1px solid #1e1e1e;font-size:13px;color:#777;line-height:2;">
+          <div>📦 Standardní doručení: 3-5 prac. dní (99 Kč)</div>
+          <div>⚡ Expres doručení: 1-2 prac. dny (249 Kč)</div>
+          <div>🏠 Osobní odběr Night City: Zdarma</div>
+          <div>↩️ Vrácení do 14 dní bez udání důvodu</div>
+        </div>
+
+        <!-- Reviews summary -->
+        <div style="padding-top:24px;margin-top:24px;border-top:1px solid #1e1e1e;">
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">Recenze zákazníků</h2>
+          <div id="reviews-list"></div>
+          <!-- Odeslat review -->
+          <div style="margin-top:20px;padding:20px;background:#111;border-radius:8px;border:1px solid #1e1e1e;">
+            <h3 style="font-size:15px;font-weight:600;margin-bottom:14px;">Napsat recenzi</h3>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <input id="review-name" type="text" placeholder="Vaše jméno" aria-label="Vaše jméno"
+                style="padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+              <select id="review-rating" aria-label="Hodnocení" style="padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+                <option value="5">⭐⭐⭐⭐⭐ — Vynikající</option>
+                <option value="4">⭐⭐⭐⭐ — Dobré</option>
+                <option value="3">⭐⭐⭐ — Průměrné</option>
+                <option value="2">⭐⭐ — Špatné</option>
+                <option value="1">⭐ — Velmi špatné</option>
+              </select>
+              <textarea id="review-text" rows="3" placeholder="Napište svůj názor..." aria-label="Text recenze"
+                style="padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;resize:vertical;"></textarea>
+              <button onclick="submitReview()" class="btn-primary" style="padding:11px;font-size:14px;">Odeslat recenzi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recently viewed -->
+    <div id="recently-viewed-section" style="margin-top:56px;padding-top:40px;border-top:1px solid #1e1e1e;"></div>
+
+    <!-- Related products -->
+    <div style="margin-top:40px;padding-top:40px;border-top:1px solid #1e1e1e;">
+      <h2 style="font-size:22px;font-weight:700;margin-bottom:24px;">Mohlo by vás zajímat</h2>
+      <div id="related-products" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;"></div>
+    </div>
+    <div id="recently-viewed-section"></div>
+  </div>
+</main>
+
+<!-- Size guide modal -->
+<div id="size-guide-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:28px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 style="font-size:18px;font-weight:700;">📏 Tabulka velikostí</h2>
+      <button onclick="document.getElementById('size-guide-modal').style.display='none'" style="background:none;border:none;color:#777;font-size:22px;cursor:pointer;" aria-label="Zavřít">✕</button>
+    </div>
+    <img src="/images/pokebowl-size-comparison.jpg" alt="Srovnání velikostí Small, Standard a Maxi s pravítkem" style="width:100%;border-radius:8px;margin-bottom:16px;max-height:180px;object-fit:cover;display:block;">
+    <table class="data-table">
+      <thead><tr><th>Velikost</th><th>Průměr</th><th>Výška</th><th>Hmotnost</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Small</strong></td><td>~6 cm</td><td>~5,5 cm</td><td>~80 g</td></tr>
+        <tr><td><strong>Standard</strong></td><td>~8 cm</td><td>~7,5 cm</td><td>~160 g</td></tr>
+        <tr><td><strong>Maxi</strong></td><td>~11 cm</td><td>~10 cm</td><td>~350 g</td></tr>
+      </tbody>
+    </table>
+    <p style="color:#666;font-size:13px;margin-top:16px;line-height:1.7;">Rozměry jsou přibližné a mohou se mírně lišit v závislosti na modelu. Hmotnost závisí na barvě (různá hustota filamentů).</p>
+  </div>
+</div>
+
+<script>
+function showSizeGuide() {
+  var modal = document.getElementById('size-guide-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+// Override loadProductDetail to add extra features
+// Post-load extras — called after loadProductDetail completes
+function afterProductLoaded() {
+  // Breadcrumb
+  var breadcrumbEl = document.getElementById('product-breadcrumb');
+  var name = document.getElementById('product-name') ? document.getElementById('product-name').textContent : 'Produkt';
+  if (breadcrumbEl && typeof renderBreadcrumb !== 'undefined') {
+    breadcrumbEl.innerHTML = renderBreadcrumb([
+      { label:'Domů', href:'/' }, { label:'Obchod', href:'/shop' }, { label:name }
+    ]);
+  }
+  // Delivery estimate
+  var delivEl = document.getElementById('delivery-estimate');
+  if (delivEl && typeof getDeliveryEstimate !== 'undefined') {
+    delivEl.innerHTML = '📅 Standardní: <strong style="color:#ccc;">' + getDeliveryEstimate('zasilkovna') + '</strong>'
+      + ' &nbsp;|&nbsp; ⚡ Expres: <strong style="color:#ccc;">' + getDeliveryEstimate('dhl_express') + '</strong>';
+  }
+  // Stock urgency
+  if (typeof getStockUrgency !== 'undefined' && window.currentProduct) {
+    var urgEl = document.getElementById('stock-urgency');
+    if (urgEl) {
+      var u = getStockUrgency(window.currentProduct.stock_quantity || 0);
+      urgEl.innerHTML = '<span style="color:' + u.color + ';">' + u.label + '</span>';
+    }
+  }
+  // Image zoom
+  if (typeof initImageZoom !== 'undefined') setTimeout(function() { initImageZoom('product-image'); }, 300);
+  // Recently viewed
+  if (typeof RecentlyViewed !== 'undefined') RecentlyViewed.render('recently-viewed-section');
+  // Also bought
+  loadAlsoBought();
+}
+// Hook into DOMContentLoaded polling — wait for product data then run extras
+var _afterProductTimer = setInterval(function() {
+  if (window.currentProduct) {
+    clearInterval(_afterProductTimer);
+    afterProductLoaded();
+  }
+}, 300);
+setTimeout(function() { clearInterval(_afterProductTimer); }, 8000);
+
+// Color label update via direct function (no override)
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('[data-color]');
+  if (btn) {
+    var color = btn.dataset.color;
+    var labels = { white:'Bílá', gray:'Šedá', black:'Černá', red:'Červená', blue:'Modrá', green:'Zelená', purple:'Fialová' };
+    var el = document.getElementById('selected-color-label');
+    if (el) el.textContent = labels[color] || color;
+  }
+});
+
+// Gift wrap and achievement hooks — listen for cart updates
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'add-to-cart-btn' || e.target.closest('#add-to-cart-btn')) {
+    setTimeout(function() {
+      if (document.getElementById('gift-wrap') && document.getElementById('gift-wrap').checked) {
+        showToast('🎁 Dárkové balení přidáno (+39 Kč)');
+      }
+      if (typeof Achievements !== 'undefined') {
+        var orders = JSON.parse(localStorage.getItem('drobnostik_cart') || '[]');
+        if (orders.length > 0) Achievements.unlock('first_purchase');
+      }
+    }, 200);
+  }
+});
+
+async function loadAlsoBought() {
+  var el = document.getElementById('also-bought');
+  if (!el || !window.currentProduct) return;
+  try {
+    var sb = await getSupabase();
+    var { data } = await sb.from('products').select('*')
+      .neq('id', window.currentProduct.id).eq('is_active', true).limit(4);
+    if (data && data.length > 0) {
+      if (typeof resetGridImageTracking === "function") resetGridImageTracking();
+      el.innerHTML = data.map(p => renderProductCard ? renderProductCard(p) : `<div onclick="viewProduct(${p.id})" style="cursor:pointer;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#2a2a2a'"><div style="aspect-ratio:1;background:#222;overflow:hidden;"><img src="/images/products/pokebowl-${p.default_color||'black'}-front.jpg" style="width:100%;height:100%;object-fit:cover;" alt="${escapeHtml(p.name)}" onerror="this.src='/images/products/pokebowl-black-front.jpg'"></div><div style="padding:14px;"><div style="font-weight:600;font-size:14px;margin-bottom:4px;">${escapeHtml(p.name)}</div><div style="color:#c8a96a;font-weight:700;">Od ${formatPrice(p.price_small||p.price_standard||0)} Kč</div></div></div>`).join('');
+    } else {
+      var section = el.parentElement;
+      if (section) section.style.display = 'none';
+    }
+  } catch(e) {
+    var section = el.parentElement;
+    if (section) section.style.display = 'none';
+  }
+}
+window.loadAlsoBought = loadAlsoBought;
+window.showSizeGuide = showSizeGuide;
+</script>

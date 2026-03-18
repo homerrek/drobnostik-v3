@@ -1,0 +1,215 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <h1 style="font-size:22px;font-weight:700;">🎫 Zákaznické tickety</h1>
+        <select id="ticket-status-filter" onchange="loadAdminTickets()" style="padding:9px 14px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;font-size:13px;">
+          <option value="">Všechny</option>
+          <option value="open">Otevřené</option>
+          <option value="in_progress">Řeší se</option>
+          <option value="resolved">Vyřešené</option>
+          <option value="closed">Uzavřené</option>
+        </select>
+      </div>
+      <div id="tickets-list"><div class="loading-spinner"></div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function loadAdminTickets() {
+  if (!checkAdminAuth()) return;
+  var status = document.getElementById('ticket-status-filter')?.value || '';
+  var el = document.getElementById('tickets-list');
+  if (!el) return;
+  try {
+    var sb = await getSupabase();
+    var ery = sb.from('support_tickets').select('*').order('created_at', { ascending: false });
+    if (status) query = query.eq('status', status);
+    var { data: tickets, error } = await query;
+    if (error) throw error;
+
+    if (!tickets?.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">Žádné tickety</div>'; return; }
+
+    var priorityColors = { high:'#f44', medium:'#fa0', low:'#4f4' };
+    var statusColors = { open:'#fa0', in_progress:'#4af', resolved:'#4f4', closed:'#555' };
+
+    el.innerHTML = `<table class="data-table">
+      <thead><tr><th style="width:32px;"><input type="checkbox" onclick="document.querySelectorAll('.ticket-checkbox').forEach(c=>c.checked=this.checked)" aria-label="Vybrat vše"></th><th>Ticket</th><th>Zákazník</th><th>Předmět</th><th>Priorita</th><th>Stav</th><th>SLA</th><th>Datum</th><th>Akce</th></tr></thead>
+      <tbody>${tickets.map(t => `
+        <tr>
+          <td style="font-family:monospace;color:#c8a96a;font-size:12px;">${escapeHtml(t.ticket_number || '#' + t.id)}</td>
+          <td><div style="font-weight:600;font-size:13px;">${escapeHtml(t.customer_name)}</div><div style="color:#666;font-size:11px;">${escapeHtml(t.customer_email || '')}</div></td>
+          <td style="font-size:13px;">${escapeHtml(t.subject || '—')}</td>
+          <td><span style="color:${priorityColors[t.priority]||'#999'};font-size:12px;font-weight:600;">● ${t.priority || 'medium'}</span></td>
+          <td>
+            <select onchange="updateTicketStatus(${t.id}, this.value)" style="padding:4px 8px;background:#0a0a0a;color:#fff;border:1px solid #333;border-radius:4px;font-size:12px;">
+              ${['open','in_progress','resolved','closed'].map(s => `<option value="${s}" ${t.status===s?'selected':''}>${{open:'Otevřený',in_progress:'Řeší se',resolved:'Vyřešený',closed:'Uzavřený'}[s]||s}</option>`).join('')}
+            </select>
+          </td>
+          <td style="color:#666;font-size:12px;">${formatDate(t.created_at)}</td>
+          <td><button onclick="viewTicket(${t.id})" style="background:rgba(200,169,106,0.15);color:#c8a96a;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;">Detail</button></td>
+        </tr>`).join('')}
+      </tbody></table>`;
+  } catch(e) {
+    el.innerHTML = `<div style="color:#f44;padding:20px;">Chyba: ${e.message}<br><small>Tabulka support_tickets možná neexistuje — spusť SQL setup.</small></div>`;
+  }
+}
+
+async function updateTicketStatus(id, status) {
+  try {
+    var sb = await getSupabase();
+    await sb.from('support_tickets').update({ status }).eq('id', id);
+    showToast('✓ Stav aktualizován');
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+
+async function viewTicket(id) {
+  try {
+    var sb = await getSupabase();
+    var { data: t } = await sb.from('support_tickets').select('*').eq('id', id).single();
+    if (!t) return;
+
+    // Load existing admin notes (stored in ticket.admin_notes JSON column or as note field)
+    var notes = t.admin_notes ? JSON.parse(t.admin_notes) : [];
+
+    var modal = document.createElement('div');
+    modal.id = 'ticket-modal-' + id;
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
+    modal.onclick = e => { if(e.target===modal) modal.remove(); };
+    modal.innerHTML = `
+      <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:28px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+          <h2 style="font-size:16px;font-weight:700;">🎫 ${escapeHtml(t.ticket_number || '#'+t.id)}</h2>
+          <button onclick="this.closest('[style*=position]').remove()" style="background:none;border:none;color:#777;font-size:22px;cursor:pointer;" aria-label="Zavřít">✕</button>
+        </div>
+
+        <!-- Ticket info -->
+        <div style="display:grid;gap:8px;font-size:13px;color:#ccc;margin-bottom:16px;padding:14px;background:#111;border-radius:8px;">
+          <div><strong style="color:#c8a96a;">Zákazník:</strong> ${escapeHtml(t.customer_name)} · <a href="mailto:${escapeHtml(t.customer_email||'')}" style="color:#c8a96a;">${escapeHtml(t.customer_email||'')}</a></div>
+          <div><strong style="color:#c8a96a;">Předmět:</strong> ${escapeHtml(t.subject||'')}</div>
+          <div><strong style="color:#c8a96a;">Kategorie:</strong> ${escapeHtml(t.category||'')} · <strong style="color:#c8a96a;">Priorita:</strong> ${t.priority} · <strong style="color:#c8a96a;">Stav:</strong> ${{'open':'Otevřený','in_progress':'Řeší se','resolved':'Vyřešený','closed':'Uzavřený'}[t.status]||t.status}</div>
+          ${t.order_number ? `<div><strong style="color:#c8a96a;">Objednávka:</strong> <span style="font-family:monospace;">${escapeHtml(t.order_number)}</span></div>` : ''}
+          <div><strong style="color:#c8a96a;">Vytvořeno:</strong> ${formatDate(t.created_at)}</div>
+        </div>
+
+        <!-- Customer message -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Zpráva zákazníka</div>
+          <div style="padding:14px;background:#0d0d0d;border-radius:8px;color:#ccc;font-size:14px;line-height:1.7;border-left:3px solid #2a2a2a;">${escapeHtml(t.body||'')}</div>
+        </div>
+
+        <!-- Admin notes thread -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Interní poznámky (${notes.length})</div>
+          <div id="admin-notes-list-${id}" style="display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;">
+            ${notes.length ? notes.map(n => `
+              <div style="padding:10px 12px;background:#111;border-radius:6px;border-left:3px solid #c8a96a;">
+                <div style="font-size:11px;color:#555;margin-bottom:4px;">${escapeHtml(n.author||'Admin')} · ${escapeHtml(n.date||'')}</div>
+                <div style="color:#ccc;font-size:13px;">${escapeHtml(n.text)}</div>
+              </div>`).join('') :
+              '<div style="color:#555;font-size:13px;padding:8px;">Žádné poznámky.</div>'}
+          </div>
+        </div>
+
+        <!-- Add note -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Přidat poznámku</div>
+          <textarea id="admin-note-text-${id}" rows="3" placeholder="Interní poznámka..." style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;font-size:13px;resize:vertical;"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button onclick="addAdminNote(${id})" class="btn-primary" style="padding:8px 18px;font-size:13px;">Přidat poznámku</button>
+            <select id="status-change-${id}" style="padding:8px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;font-size:13px;">
+              ${['open','in_progress','resolved','closed'].map(s => `<option value="${s}" ${t.status===s?'selected':''}>${{'open':'Otevřený','in_progress':'Řeší se','resolved':'Vyřešený','closed':'Uzavřený'}[s]}</option>`).join('')}
+            </select>
+            <button onclick="updateTicketStatusFromModal(${id})" class="btn-secondary" style="padding:8px 14px;font-size:13px;">Uložit stav</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+
+async function addAdminNote(ticketId) {
+  var text = document.getElementById('admin-note-text-' + ticketId)?.value?.trim();
+  if (!text) { showToast('Napište poznámku'); return; }
+  try {
+    var sb = await getSupabase();
+    var { data: t } = await sb.from('support_tickets').select('admin_notes').eq('id', ticketId).single();
+    var notes = t?.admin_notes ? JSON.parse(t.admin_notes) : [];
+    notes.push({ text, author: 'Admin', date: new Date().toLocaleDateString('cs-CZ') });
+    await sb.from('support_tickets').update({ admin_notes: JSON.stringify(notes) }).eq('id', ticketId);
+    // Refresh notes list in modal
+    var list = document.getElementById('admin-notes-list-' + ticketId);
+    if (list) list.innerHTML = notes.map(n => `
+      <div style="padding:10px 12px;background:#111;border-radius:6px;border-left:3px solid #c8a96a;">
+        <div style="font-size:11px;color:#555;margin-bottom:4px;">${escapeHtml(n.author||'Admin')} · ${escapeHtml(n.date||'')}</div>
+        <div style="color:#ccc;font-size:13px;">${escapeHtml(n.text)}</div>
+      </div>`).join('');
+    document.getElementById('admin-note-text-' + ticketId).value = '';
+    showToast('✓ Poznámka přidána');
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+window.addAdminNote = addAdminNote;
+
+async function updateTicketStatusFromModal(ticketId) {
+  var status = document.getElementById('status-change-' + ticketId)?.value;
+  if (!status) return;
+  try {
+    var sb = await getSupabase();
+    await sb.from('support_tickets').update({ status }).eq('id', ticketId);
+    showToast('✓ Stav ticketu aktualizován');
+    loadAdminTickets();
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+window.updateTicketStatusFromModal = updateTicketStatusFromModal;
+
+async function bulkResolveTickets() {
+  var checked = [...document.querySelectorAll('.ticket-checkbox:checked')].map(c => parseInt(c.value));
+  if (!checked.length) { showToast('Vyberte tickety'); return; }
+  try {
+    var sb = await getSupabase();
+    await sb.from('support_tickets').update({ status:'resolved' }).in('id', checked);
+    showToast(`✓ ${checked.length} ticketů vyřešeno`);
+    loadAdminTickets();
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+async function bulkCloseTickets() {
+  var checked = [...document.querySelectorAll('.ticket-checkbox:checked')].map(c => parseInt(c.value));
+  if (!checked.length) { showToast('Vyberte tickety'); return; }
+  try {
+    var sb = await getSupabase();
+    await sb.from('support_tickets').update({ status:'closed' }).in('id', checked);
+    showToast(`${checked.length} ticketů uzavřeno`);
+    loadAdminTickets();
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+function getSLAStatus(createdAt, status) {
+  if (status === 'resolved' || status === 'closed') return { color:'#4f4', label:'✓ Vyřešeno', expired:false };
+  var hours = (Date.now() - new Date(createdAt)) / 3600000;
+  if (hours > 48) return { color:'#f44', label:`❌ ${Math.round(hours)}h (překročeno SLA)`, expired:true };
+  if (hours > 24) return { color:'#fa0', label:`⚠️ ${Math.round(hours)}h (blíží SLA)`, expired:false };
+  return { color:'#4af', label:`${Math.round(hours)}h`, expired:false };
+}
+window.loadAdminTickets = loadAdminTickets;
+window.updateTicketStatus = updateTicketStatus;
+window.viewTicket = viewTicket;
+</script>

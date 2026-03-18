@@ -1,0 +1,50 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <a href="/shop" onclick="event.preventDefault();goTo('/shop')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Obchod</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Bestsellery</span></nav>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:32px;font-weight:700;margin-bottom:6px;">⭐ Bestsellery</h1>
+        <p style="color:#777;font-size:14px;">Nejprodávanější produkty — oblíbené zákazníky</p>
+      </div>
+      <button onclick="goTo('/shop')" class="btn-secondary" style="padding:10px 20px;">Všechny produkty →</button>
+    </div>
+    <div id="bestsellers-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
+</main>
+<script>
+async function loadBestSellers() {
+  var grid = document.getElementById('bestsellers-grid');
+  if (!grid) return;
+  try {
+    var sb = await getSupabase();
+    var { data: products, error } = await sb.from('products')
+      .select('*').eq('is_active', true)
+      .order('sold_count', { ascending: false }).limit(12);
+    if (error) throw error;
+    if (products && products.length > 0) {
+      if (typeof resetGridImageTracking === "function") resetGridImageTracking();
+      grid.innerHTML = products.map(p => renderProductCard(p)).join('');
+      // Attach click handlers — open product page on card click
+      grid.querySelectorAll('.product-card-el').forEach(el => {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', (e) => {
+          if (!e.target.closest('button')) {
+            if (typeof viewProduct === 'function') viewProduct(el.dataset.id);
+            else if (typeof goTo === 'function') { sessionStorage.setItem('selectedProductId', el.dataset.id); goTo('/product'); }
+          }
+        });
+      });
+    } else {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#777;"><div style="font-size:48px;margin-bottom:16px;">📦</div><p>Žádné bestsellery</p><button onclick="goTo(\'/shop\')" class="btn-primary" style="margin-top:16px;padding:11px 24px;">Prohlédnout obchod</button></div>';
+    }
+  } catch (e) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#f44;">❌ ${escapeHtml(e.message)}</div>`;
+  }
+}
+window.loadBestSellers = loadBestSellers;
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof loadBestSellers === 'function') loadBestSellers();
+});
+</script>

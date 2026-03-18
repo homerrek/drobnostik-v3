@@ -1,0 +1,71 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:20px;">🤝 Affiliate partneři</h1>
+      <div id="affiliates-list"><div class="loading-spinner"></div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function loadAdminAffiliates() {
+  if (!checkAdminAuth()) return;
+  var el = document.getElementById('affiliates-list');
+  if (!el) return;
+  try {
+    var sb = await getSupabase();
+    var { data: affiliates, error } = await sb.from('affiliates').select('*').order('created_at', { ascending: false });
+    if (error) { el.innerHTML = '<div style="color:#777;padding:20px;">Tabulka affiliates neexistuje — přidej do SQL setup.</div>'; return; }
+    if (!affiliates?.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">Žádné přihlášky</div>'; return; }
+    var statusColors = { pending:'#fa0', approved:'#4f4', rejected:'#f44' };
+    el.innerHTML = `<table class="data-table">
+      <thead><tr><th>Jméno</th><th>Email</th><th>Kanál</th><th>Dosah</th><th>Provize</th><th>Stav</th><th>Akce</th></tr></thead>
+      <tbody>${affiliates.map(a => `
+        <tr>
+          <td style="font-weight:600;">${escapeHtml(a.name)}</td>
+          <td style="color:#777;font-size:13px;">${escapeHtml(a.email)}</td>
+          <td style="color:#777;font-size:13px;">${escapeHtml(a.channel||'—')}</td>
+          <td>${a.reach ? formatPrice(a.reach) : '—'}</td>
+          <td style="color:#c8a96a;font-weight:600;">${a.commission_rate||10}%</td>
+          <td><span style="color:${statusColors[a.status]||'#999'};font-weight:600;font-size:12px;">● ${{pending:'Čeká na schválení',approved:'Schválený',rejected:'Zamítnutý'}[a.status||'pending']||a.status}</span></td>
+          <td>
+            <button onclick="approveAffiliate(${a.id})" style="background:rgba(79,204,79,0.15);color:#4f4;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px;">Schválit</button>
+            <button onclick="rejectAffiliate(${a.id})" style="background:rgba(244,68,68,0.1);color:#f44;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;">Zamítnout</button>
+          </td>
+        </tr>`).join('')}
+      </tbody></table>`;
+  } catch(e) { el.innerHTML = `<div style="color:#f44;padding:20px;">Chyba: ${e.message}</div>`; }
+}
+
+async function approveAffiliate(id) {
+  var sb = await getSupabase(); await sb.from('affiliates').update({ status:'approved' }).eq('id', id);
+  showToast('✓ Partner schválen'); loadAdminAffiliates();
+}
+async function rejectAffiliate(id) {
+  var sb = await getSupabase(); await sb.from('affiliates').update({ status:'rejected' }).eq('id', id);
+  showToast('Partner zamítnut'); loadAdminAffiliates();
+}
+
+window.loadAdminAffiliates = loadAdminAffiliates;
+window.approveAffiliate = approveAffiliate;
+window.rejectAffiliate = rejectAffiliate;
+</script>

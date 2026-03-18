@@ -1,0 +1,122 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:900px;margin:0 auto;">
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:28px;">🛒 Košík</h1>
+    <div id="cart-content"><div class="loading-spinner"></div></div>
+  </div>
+</main>
+
+<script>
+async function loadCart() {
+  var items = Cart.getItems();
+  var container = document.getElementById('cart-content');
+  if (!container) return;
+
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:80px 20px;color:#999;">
+        <div style="font-size:64px;margin-bottom:20px;">🛒</div>
+        <h2 style="margin-bottom:12px;">Košík je prázdný</h2>
+        <p style="color:#666;margin-bottom:24px;">Přidejte produkty z obchodu.</p>
+        <button onclick="goTo('/shop')" class="btn-primary" style="padding:13px 28px;">Prohlédnout obchod</button>
+      </div>`;
+    return;
+  }
+
+  var subtotal = 0;
+  var rows = items.map(item => {
+    var lineTotal = item.price * item.quantity;
+    subtotal += lineTotal;
+    return `
+      <div style="display:grid;grid-template-columns:64px 1fr auto;gap:16px;padding:16px 0;border-bottom:1px solid #1e1e1e;align-items:center;">
+        <img src="${item.image || '/images/products/pokebowl-' + (item.color || 'black') + '-front.jpg'}"
+          style="width:64px;height:64px;object-fit:cover;border-radius:6px;background:#222;"
+          onerror="this.src='/images/products/pokebowl-black-front.jpg'" alt="${escapeHtml(item.name)}">
+        <div>
+          <div style="font-weight:600;margin-bottom:3px;">${escapeHtml(item.name)}</div>
+          <div style="color:#666;font-size:13px;">Barva: ${escapeHtml(item.color || '-')} | Velikost: ${escapeHtml(item.size || '-')}</div>
+          <div style="color:#c8a96a;font-size:13px;margin-top:2px;">${formatPrice(item.price)} Kč / ks</div>
+        </div>
+        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <div style="font-weight:700;font-size:16px;">${formatPrice(lineTotal)} Kč</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button onclick="changeQty(${item.id}, '${item.color}', '${item.size}', ${item.quantity - 1})"
+              style="width:28px;height:28px;background:#222;border:1px solid #333;border-radius:4px;color:#fff;cursor:pointer;font-size:16px;">−</button>
+            <span style="min-width:24px;text-align:center;font-weight:600;">${item.quantity}</span>
+            <button onclick="changeQty(${item.id}, '${item.color}', '${item.size}', ${item.quantity + 1})"
+              style="width:28px;height:28px;background:#222;border:1px solid #333;border-radius:4px;color:#fff;cursor:pointer;font-size:16px;">+</button>
+          </div>
+          <button onclick="removeCart(${item.id}, '${item.color}', '${item.size}')"
+            style="color:#f66;background:none;border:none;cursor:pointer;font-size:12px;padding:0;">✕ Odebrat</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div>${rows}</div>
+    <div style="margin-top:28px;padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+        <div style="font-size:22px;font-weight:700;">Celkem: <span style="color:#c8a96a;">${formatPrice(subtotal)} Kč</span></div>
+        <div style="font-size:13px;color:#666;">+ doprava od 0 Kč</div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+        <button onclick="goTo('/shop')" class="btn-secondary" style="padding:12px 20px;">← Pokračovat v nákupu</button>
+        <button onclick="goTo('/checkout')" class="btn-primary" style="padding:12px 24px;font-size:15px;">Pokladna →</button>
+      </div>
+    </div>`;
+}
+
+async function changeQty(id, color, size, qty) {
+  if (qty < 1) { removeCart(id, color, size); return; }
+  Cart.updateQty(id, color, qty, size);
+  loadCart();
+}
+
+async function removeCart(id, color, size) {
+  Cart.remove(id, color, size);
+  loadCart();
+}
+
+// Upsell in cart
+async function loadCartUpsell() {
+  try {
+    var items = Cart.getItems();
+    if (!items.length) return;
+    var sb = await getSupabase();
+    var { data: products } = await sb.from('products').select('*')
+      .eq('is_active', true)
+      .not('id', 'in', `(${items.map(i=>i.id).join(',')})`)
+      .limit(3);
+    
+    var upsellEl = document.getElementById('cart-upsell');
+    if (!upsellEl || !products?.length) return;
+    
+    var total = Cart.getTotal();
+    var freeShippingThreshold = 1500;
+    var toFreeShipping = freeShippingThreshold - total;
+    
+    upsellEl.style.display = 'block';
+    upsellEl.innerHTML = `
+      ${toFreeShipping > 0 ? `<div style="padding:12px 16px;background:rgba(200,169,106,0.08);border:1px solid rgba(200,169,106,0.2);border-radius:8px;margin-bottom:16px;font-size:13px;text-align:center;">
+        🚚 Přidejte zboží za <strong style="color:#c8a96a;">${formatPrice(toFreeShipping)} Kč</strong> a získáte <strong>dopravu zdarma!</strong>
+        <div style="margin-top:8px;background:#2a2a2a;border-radius:4px;height:6px;overflow:hidden;"><div style="width:${Math.min(100,(total/freeShippingThreshold)*100).toFixed(0)}%;background:#c8a96a;height:100%;border-radius:4px;transition:width 0.5s;"></div></div>
+      </div>` : '<div style="padding:10px 14px;background:rgba(79,204,79,0.1);border:1px solid rgba(79,204,79,0.2);border-radius:8px;margin-bottom:16px;font-size:13px;text-align:center;color:#4f4;">✅ Máte dopravu zdarma!</div>'}
+      <div style="font-size:14px;font-weight:600;color:#999;margin-bottom:12px;">Mohlo by vás zajímat</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+        ${products.map(p => `
+          <div style="background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:12px;display:flex;align-items:center;gap:12px;">
+            <img src="/images/products/pokebowl-${p.default_color||'black'}-front.jpg" style="width:52px;height:52px;object-fit:cover;border-radius:6px;" onerror="this.src='/images/products/pokebowl-black-front.jpg'" alt="${escapeHtml(p.name)}">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(p.name)}</div>
+              <div style="color:#c8a96a;font-size:13px;font-weight:700;">Od ${formatPrice(p.price_small||p.price_standard||0)} Kč</div>
+            </div>
+            <button onclick="Cart.add({id:${p.id},name:'${escapeHtml(p.name)}',price:${p.price_standard||p.price_small||0},color:'black',size:'Standard'});loadCart();"
+              style="background:rgba(200,169,106,0.15);color:#c8a96a;border:1px solid rgba(200,169,106,0.2);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;white-space:nowrap;flex-shrink:0;">+ Přidat</button>
+          </div>`).join('')}
+      </div>`;
+  } catch(e) {}
+}
+
+window.loadCart = loadCart;
+window.changeQty = changeQty;
+window.removeCart = removeCart;
+</script>

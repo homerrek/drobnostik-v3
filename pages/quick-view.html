@@ -1,0 +1,15 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:700px;margin:0 auto;">
+    <div id="quick-view-content"><div class="loading-spinner"></div></div>
+  </div>
+</main>
+
+<script>
+async function loadQuickViewPage() {
+  var id = sessionStorage.getItem('quickViewId') || sessionStorage.getItem('selectedProductId');
+  if (!id) { goTo('/shop'); return; }
+  if (typeof loadQuickView === 'function') loadQuickView(id);
+  else goTo('/product');
+}
+document.addEventListener('DOMContentLoaded', loadQuickViewPage);
+</script>

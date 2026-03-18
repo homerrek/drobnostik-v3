@@ -1,0 +1,141 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:900px;margin:0 auto;">
+    <h1 style="font-size:28px;font-weight:700;margin-bottom:6px;">🤝 Affiliate dashboard</h1>
+    <p style="color:#777;margin-bottom:24px;font-size:14px;">Sledujte své výkony a výdělky</p>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px;">
+      <div style="padding:18px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:28px;font-weight:700;color:#4f4;" data-aff-earned>0 Kč</div>
+        <div style="color:#666;font-size:12px;margin-top:4px;">Celkové výdělky</div>
+      </div>
+      <div style="padding:18px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:28px;font-weight:700;color:#c8a96a;" data-aff-clicks>0</div>
+        <div style="color:#666;font-size:12px;margin-top:4px;">Kliknutí</div>
+      </div>
+      <div style="padding:18px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:28px;font-weight:700;color:#4af;" data-aff-sales>0</div>
+        <div style="color:#666;font-size:12px;margin-top:4px;">Konverze</div>
+      </div>
+      <div style="padding:18px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:28px;font-weight:700;" data-aff-rate>10%</div>
+        <div style="color:#666;font-size:12px;margin-top:4px;">Vaše provize</div>
+      </div>
+    </div>
+
+    <!-- Main content area (login or data) -->
+    <div data-aff-main>
+      <!-- Váš referral odkaz -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px;margin-bottom:20px;">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;">🔗 Váš referral odkaz</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="text" readonly data-aff-link placeholder="Přihlaste se pro zobrazení odkazu"
+            style="flex:1;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#c8a96a;font-family:monospace;min-width:200px;">
+          <button onclick="copyAffLink()" class="btn-primary" style="padding:10px 16px;">Kopírovat</button>
+        </div>
+      </div>
+
+      <!-- Kód -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px;margin-bottom:20px;">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;">🎟️ Váš kód</h3>
+        <input type="text" readonly data-aff-code placeholder="—"
+          style="width:100%;padding:12px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#c8a96a;font-family:monospace;font-weight:700;font-size:18px;text-align:center;letter-spacing:3px;">
+      </div>
+
+      <!-- Tabulka prodejů -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px;">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:14px;">📋 Přehled prodejů</h3>
+        <div style="overflow-x:auto;">
+          <table class="data-table" style="min-width:400px;">
+            <thead><tr><th>Objednávka</th><th>Datum</th><th>Hodnota</th><th>Provize</th></tr></thead>
+            <tbody id="aff-sales-table">
+              <tr><td colspan="4" style="text-align:center;color:#555;padding:24px;">Načítám...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+async function loadAffiliateDash() {
+  // Načti affiliate kód ze sessionStorage (uloží se po registraci/přihlášení)
+  var code = sessionStorage.getItem('affiliate_code') || localStorage.getItem('affiliate_code');
+  var statsEl = document.getElementById('aff-stats');
+  var tableEl = document.getElementById('aff-sales-table');
+
+  if (!code) {
+    // Zobraz přihlašovací formulář místo dat
+    var mainDiv = document.querySelector('[data-aff-main]');
+    if (mainDiv) mainDiv.innerHTML = `
+      <div style="padding:48px;text-align:center;background:#111;border-radius:10px;border:1px solid #1e1e1e;">
+        <div style="font-size:48px;margin-bottom:12px;">🔐</div>
+        <h2 style="margin-bottom:12px;">Přihlášení affiliate partnera</h2>
+        <p style="color:#777;margin-bottom:20px;">Zadejte svůj referral kód pro přístup k dashboardu.</p>
+        <div style="max-width:300px;margin:0 auto;display:flex;flex-direction:column;gap:10px;">
+          <input id="aff-login-code" type="text" placeholder="Váš kód (např. MAREK2026)"
+            style="padding:12px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;text-align:center;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">
+          <button onclick="affLogin()" class="btn-primary" style="padding:12px;">Přihlásit se</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  try {
+    var sb = await getSupabase();
+    var { data: aff } = await sb.from('affiliates').select('*').eq('referral_code', code.toUpperCase()).single();
+    if (!aff) { showToast('Kód nenalezen'); sessionStorage.removeItem('affiliate_code'); return; }
+
+    // Aktualizuj statistiky
+    document.querySelectorAll('[data-aff-earned]').forEach(el => el.textContent = formatPrice(aff.total_earned) + ' Kč');
+    document.querySelectorAll('[data-aff-clicks]').forEach(el => el.textContent = aff.total_clicks);
+    document.querySelectorAll('[data-aff-sales]').forEach(el => el.textContent = aff.total_sales);
+    document.querySelectorAll('[data-aff-rate]').forEach(el => el.textContent = aff.commission_rate + '%');
+    document.querySelectorAll('[data-aff-code]').forEach(el => el.value = aff.referral_code);
+    document.querySelectorAll('[data-aff-link]').forEach(el => el.value = 'https://drobnostik.cz/?ref=' + aff.referral_code);
+
+    if (tableEl) {
+      // Najdi objednávky s tímto referral kódem
+      var { data: orders } = await sb.from('orders').select('order_number,total_price,created_at').ilike('note', '%' + aff.referral_code + '%').order('created_at', {ascending: false}).limit(20);
+      if (orders && orders.length > 0) {
+        tableEl.innerHTML = orders.map(o => `
+          <tr>
+            <td>${escapeHtml(o.order_number)}</td>
+            <td>${formatDate(o.created_at)}</td>
+            <td>${formatPrice(o.total_price)} Kč</td>
+            <td style="color:#4f4;">+${formatPrice(Math.round(o.total_price * aff.commission_rate / 100))} Kč</td>
+          </tr>`).join('');
+      } else {
+        tableEl.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#555;padding:24px;">Zatím žádné prodeje</td></tr>';
+      }
+    }
+  } catch(e) {
+    showToast('Chyba: ' + e.message);
+  }
+}
+
+async function affLogin() {
+  var code = document.getElementById('aff-login-code')?.value?.trim().toUpperCase();
+  if (!code) return;
+  try {
+    var sb = await getSupabase();
+    var { data } = await sb.from('affiliates').select('referral_code').eq('referral_code', code).single();
+    if (data) {
+      sessionStorage.setItem('affiliate_code', code);
+      localStorage.setItem('affiliate_code', code);
+      loadAffiliateDash();
+    } else {
+      showToast('❌ Kód nenalezen. Nejprve se zaregistrujte.');
+    }
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+
+function copyAffLink() {
+  var el = document.querySelector('[data-aff-link]');
+  if (el) { navigator.clipboard?.writeText(el.value); showToast('✓ Odkaz zkopírován!'); }
+}
+
+window.loadAffiliateDash = loadAffiliateDash;
+window.affLogin = affLogin;
+window.copyAffLink = copyAffLink;
+</script>

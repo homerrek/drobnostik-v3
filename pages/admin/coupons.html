@@ -1,0 +1,122 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h1 style="font-size:22px;font-weight:700;">🎟️ Slevové kupóny</h1>
+        <button onclick="showCouponForm()" class="btn-primary" style="padding:9px 18px;">+ Nový kupón</button>
+      </div>
+
+      <div id="coupon-form" style="display:none;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:20px;margin-bottom:20px;">
+        <h2 style="font-size:15px;margin-bottom:14px;">Nový kupón</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
+          <div><label>Kód *</label><input id="coup-code" type="text" placeholder="SLEVA10" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;text-transform:uppercase;"></div>
+          <div><label>Typ</label>
+            <select id="coup-type" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;">
+              <option value="percent">Procenta (%)</option>
+              <option value="fixed">Pevná částka (Kč)</option>
+            </select>
+          </div>
+          <div><label>Hodnota *</label><input id="coup-value" type="number" placeholder="10" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Min. objednávka (Kč)</label><input id="coup-min" type="number" placeholder="0" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Max. použití</label><input id="coup-max" type="number" placeholder="Neomezeno" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px;">
+          <button onclick="createCoupon()" class="btn-primary" style="padding:9px 20px;">Vytvořit</button>
+          <button onclick="document.getElementById('coupon-form').style.display='none'" class="btn-secondary" style="padding:9px 14px;">Zrušit</button>
+        </div>
+      </div>
+
+      <div id="coupons-list"><div class="loading-spinner"></div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function loadAdminCoupons() {
+  if (!checkAdminAuth()) return;
+  var el = document.getElementById('coupons-list');
+  if (!el) return;
+  try {
+    var sb = await getSupabase();
+    var { data: coupons, error } = await sb.from('coupons').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!coupons?.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">Žádné kupóny</div>'; return; }
+    el.innerHTML = `<table class="data-table">
+      <thead><tr><th>Kód</th><th>Typ</th><th>Hodnota</th><th>Min. obj.</th><th>Použití</th><th>Stav</th><th>Akce</th></tr></thead>
+      <tbody>${coupons.map(c => `
+        <tr>
+          <td style="font-family:monospace;font-weight:700;color:#c8a96a;">${escapeHtml(c.code)}</td>
+          <td style="color:#777;font-size:13px;">${c.discount_type === 'percent' ? 'Procenta' : 'Pevná'}</td>
+          <td style="font-weight:600;">${c.discount_value}${c.discount_type === 'percent' ? '%' : ' Kč'}</td>
+          <td style="color:#777;">${c.min_order ? formatPrice(c.min_order) + ' Kč' : '—'}</td>
+          <td>${c.used_count || 0}${c.max_uses ? ' / ' + c.max_uses : ' / ∞'}</td>
+          <td><span class="badge ${c.is_active ? 'badge-success' : 'badge-warning'}">${c.is_active ? 'Aktivní' : 'Vypnuto'}</span></td>
+          <td>
+            <button onclick="toggleCoupon(${c.id}, ${!c.is_active})" style="background:rgba(200,169,106,0.1);color:#c8a96a;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-right:4px;">${c.is_active ? 'Vypnout' : 'Zapnout'}</button>
+            <button onclick="deleteCoupon(${c.id},'${escapeHtml(c.code)}')" style="background:rgba(244,68,68,0.1);color:#f44;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;">Smazat</button>
+          </td>
+        </tr>`).join('')}
+      </tbody></table>`;
+  } catch(e) {
+    el.innerHTML = `<div style="color:#f44;padding:20px;">Chyba: ${e.message}</div>`;
+  }
+}
+
+async function showCouponForm() {
+  var el = document.getElementById('coupon-form');
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function createCoupon() {
+  var code = document.getElementById('coup-code')?.value?.trim().toUpperCase();
+  var value = parseInt(document.getElementById('coup-value')?.value);
+  if (!code || !value) { showToast('Vyplňte kód a hodnotu'); return; }
+  try {
+    var sb = await getSupabase();
+    await sb.from('coupons').insert([{
+      code, discount_value: value,
+      discount_type: document.getElementById('coup-type')?.value || 'percent',
+      min_order: parseInt(document.getElementById('coup-min')?.value) || 0,
+      max_uses: parseInt(document.getElementById('coup-max')?.value) || null,
+      is_active: true
+    }]);
+    showToast('✓ Kupón vytvořen'); document.getElementById('coupon-form').style.display = 'none'; loadAdminCoupons();
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+
+async function toggleCoupon(id, active) {
+  var sb = await getSupabase(); await sb.from('coupons').update({ is_active: active }).eq('id', id);
+  showToast(active ? '✓ Kupón aktivován' : 'Kupón deaktivován'); loadAdminCoupons();
+}
+
+async function deleteCoupon(id, code) {
+  if (!confirm(`Smazat kupón "${code}"?`)) return;
+  var sb = await getSupabase(); await sb.from('coupons').delete().eq('id', id);
+  showToast('Kupón smazán'); loadAdminCoupons();
+}
+
+window.loadAdminCoupons = loadAdminCoupons;
+window.showCouponForm = showCouponForm;
+window.createCoupon = createCoupon;
+window.toggleCoupon = toggleCoupon;
+window.deleteCoupon = deleteCoupon;
+</script>

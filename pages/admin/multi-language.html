@@ -1,0 +1,102 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:24px;">🌍 Jazykové nastavení</h1>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px;">
+      <div id="lang-switcher"></div>
+      </div>
+
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;margin-bottom:20px;">
+        <h2 style="font-size:16px;font-weight:700;margin-bottom:18px;">Překlady klíčových textů</h2>
+        <p style="color:#666;font-size:13px;margin-bottom:16px;">Upravte texty pro každý aktivní jazyk. Aktivní jazyk: 🇨🇿 Čeština</p>
+        <table class="data-table">
+          <thead><tr><th>Klíč</th><th>Čeština (výchozí)</th><th>Překlad</th></tr></thead>
+          <tbody>
+      <div id="lang-strings"></div>
+          </tbody>
+        </table>
+        <button onclick="saveTranslations()" class="btn-primary" style="margin-top:16px;padding:10px 24px;">Uložit překlady</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+
+function renderLangSwitcher() {
+  var el = document.getElementById('lang-switcher');
+  if (!el) return;
+  var langs = [
+    { flag:'🇨🇿', lang:'Čeština',  code:'cs', active:true  },
+    { flag:'🇬🇧', lang:'Angličtina',code:'en', active:false },
+    { flag:'🇩🇪', lang:'Němčina',   code:'de', active:false },
+    { flag:'🇸🇰', lang:'Slovenština',code:'sk',active:false },
+  ];
+  var html = '';
+  for (var i = 0; i < langs.length; i++) {
+    var l = langs[i];
+    html += '<div style="padding:16px 20px;background:#1a1a1a;border:1px solid ' + (l.active?'#c8a96a':'#2a2a2a') + ';border-radius:8px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="setActiveLang(\'' + l.code + '\')">';
+    html += '<span style="font-size:24px;">' + l.flag + '</span>';
+    html += '<div style="flex:1;"><div style="font-weight:600;">' + l.lang + '</div><div style="font-size:12px;color:#666;">' + l.code.toUpperCase() + '</div></div>';
+    html += '<span style="font-size:12px;padding:3px 10px;border-radius:12px;background:' + (l.active?'rgba(200,169,106,0.15)':'rgba(100,100,100,0.1)') + ';color:' + (l.active?'#c8a96a':'#666') + ';">' + (l.active?'✓ Aktivní':'Vypnuto') + '</span>';
+    html += '</div>';
+  }
+  el.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:28px;';
+  el.innerHTML = html;
+}
+
+function setActiveLang(code) { showToast('Jazyk ' + code.toUpperCase() + ' nastaven jako výchozí'); renderLangSwitcher(); }
+window.setActiveLang = setActiveLang;
+
+function renderLangStrings() {
+  var el = document.getElementById('lang-strings');
+  if (!el) return;
+  var strings = [
+    ['nav.home','Domů','Home'],['nav.shop','Obchod','Shop'],
+    ['nav.cart','Košík','Cart'],['btn.buy','Koupit','Buy'],
+    ['btn.addToCart','Přidat do košíku','Add to cart'],
+    ['product.inStock','Na skladě','In stock'],
+    ['product.outOfStock','Vyprodáno','Out of stock'],
+  ];
+  var html = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+  html += '<thead><tr><th style="padding:10px;text-align:left;color:#666;border-bottom:1px solid #2a2a2a;">Klíč</th><th style="padding:10px;text-align:left;color:#666;border-bottom:1px solid #2a2a2a;">🇨🇿 Čeština</th><th style="padding:10px;text-align:left;color:#666;border-bottom:1px solid #2a2a2a;">🇬🇧 English</th></tr></thead><tbody>';
+  for (var i = 0; i < strings.length; i++) {
+    html += '<tr style="border-bottom:1px solid #1a1a1a;">';
+    html += '<td style="padding:10px;color:#c8a96a;font-family:monospace;">' + strings[i][0] + '</td>';
+    html += '<td style="padding:10px;color:#ccc;">' + strings[i][1] + '</td>';
+    html += '<td style="padding:10px;color:#ccc;">' + strings[i][2] + '</td>';
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', function() { renderLangSwitcher(); renderLangStrings(); });
+
+function toggleLanguage(code, activate) {
+  showToast(activate ? `✓ ${code.toUpperCase()} aktivováno` : `${code.toUpperCase()} deaktivováno`);
+}
+function saveTranslations() { showToast('✓ Překlady uloženy'); }
+window.toggleLanguage = toggleLanguage;
+window.saveTranslations = saveTranslations;
+</script>

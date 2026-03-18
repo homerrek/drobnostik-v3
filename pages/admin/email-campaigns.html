@@ -1,0 +1,166 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <h1 style="font-size:22px;font-weight:700;">📧 Email kampaně</h1>
+        <button onclick="showCampaignForm()" class="btn-primary" style="padding:9px 18px;">+ Nová kampaň</button>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;" id="email-stats">
+        <div class="loading-spinner"></div>
+      </div>
+
+      <!-- New campaign form -->
+      <div id="campaign-form" style="display:none;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:20px;margin-bottom:20px;">
+        <h2 style="font-size:15px;margin-bottom:14px;">Nová email kampaň</h2>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div><label>Název kampaně *</label><input id="camp-name" type="text" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Předmět emailu *</label><input id="camp-subject" type="text" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div><label>Typ</label>
+              <select id="camp-type" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;">
+                <option value="newsletter">Newsletter</option>
+                <option value="promotional">Promo akce</option>
+                <option value="abandoned_cart">Opuštěný košík</option>
+                <option value="welcome">Welcome série</option>
+                <option value="reengagement">Re-engagement</option>
+              </select>
+            </div>
+            <div><label>Odeslat</label>
+              <select id="camp-schedule" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;">
+                <option value="now">Ihned</option>
+                <option value="scheduled">Plánovaně</option>
+                <option value="draft">Uložit jako draft</option>
+              </select>
+            </div>
+          </div>
+          <div><label>Obsah emailu (HTML)</label><textarea id="camp-body" rows="5" placeholder="<h1>Nadpis</h1><p>Text...</p>" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-family:monospace;font-size:13px;resize:vertical;"></textarea></div>
+          <div style="display:flex;gap:10px;">
+            <button onclick="createCampaign()" class="btn-primary" style="padding:9px 20px;">Vytvořit</button>
+            <button onclick="document.getElementById('campaign-form').style.display='none'" class="btn-secondary" style="padding:9px 14px;">Zrušit</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campaign list -->
+      <div id="campaigns-list"><div class="loading-spinner"></div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+var STATIC_CAMPAIGNS = [
+  { id:1, name:'Uvítací newsletter', subject:'Vítejte v Drobnostík! 🎮', type:'welcome', status:'active', sent:1247, opens:892, clicks:334, created:'2026-01-15' },
+  { id:2, name:'Shadow Edition launch', subject:'Nová limitovaná edice je tady!', type:'promotional', status:'sent', sent:2341, opens:1876, clicks:789, created:'2026-02-28' },
+  { id:3, name:'Opuštěný košík — upomínka', subject:'Nezapomněl jste na svůj košík?', type:'abandoned_cart', status:'active', sent:456, opens:312, clicks:98, created:'2026-01-20' },
+  { id:4, name:'Jarní akce 2026', subject:'🌸 Jarní slevy až -20%!', type:'promotional', status:'draft', sent:0, opens:0, clicks:0, created:'2026-03-10' },
+];
+
+async function loadEmailCampaigns() {
+  if (!checkAdminAuth()) return;
+  var statsEl = document.getElementById('email-stats');
+  var listEl = document.getElementById('campaigns-list');
+
+  // Try DB, fallback to static
+  var campaigns = STATIC_CAMPAIGNS;
+  var subscribers = 0;
+  try {
+    var sb = await getSupabase();
+    var [campRes, subRes] = await Promise.all([
+      sb.from('email_campaigns').select('*').order('created_at', { ascending: false }),
+      sb.from('newsletter_subscribers').select('*', { count: 'exact' })
+    ]);
+    if (campRes.data?.length) campaigns = campRes.data;
+    subscribers = subRes.count || 0;
+  } catch(e) {}
+
+  var totalSent = campaigns.reduce((s, c) => s + (c.sent || 0), 0);
+  var totalOpens = campaigns.reduce((s, c) => s + (c.opens || 0), 0);
+  var avgOpenRate = totalSent > 0 ? Math.round(totalOpens / totalSent * 100) : 0;
+
+  if (statsEl) statsEl.innerHTML = `
+    <div style="padding:16px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+      <div style="font-size:26px;font-weight:700;color:#4af;">${subscribers || campaigns.length}</div>
+      <div style="color:#666;font-size:12px;margin-top:4px;">Odběratelů</div>
+    </div>
+    <div style="padding:16px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+      <div style="font-size:26px;font-weight:700;color:#c8a96a;">${campaigns.length}</div>
+      <div style="color:#666;font-size:12px;margin-top:4px;">Kampaní</div>
+    </div>
+    <div style="padding:16px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+      <div style="font-size:26px;font-weight:700;">${formatPrice(totalSent)}</div>
+      <div style="color:#666;font-size:12px;margin-top:4px;">Odesláno emailů</div>
+    </div>
+    <div style="padding:16px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+      <div style="font-size:26px;font-weight:700;color:#4f4;">${avgOpenRate}%</div>
+      <div style="color:#666;font-size:12px;margin-top:4px;">Průměrný open rate</div>
+    </div>`;
+
+  var typeLabels = { newsletter:'Newsletter', promotional:'Promo', abandoned_cart:'Košík', welcome:'Welcome', reengagement:'Re-engage' };
+  var statusColors = { active:'#4f4', sent:'#4af', draft:'#fa0', paused:'#f44' };
+
+  if (listEl) listEl.innerHTML = `
+    <table class="data-table">
+      <thead><tr><th>Kampaň</th><th>Typ</th><th>Stav</th><th>Odesláno</th><th>Open rate</th><th>Kliknutí</th><th>Datum</th></tr></thead>
+      <tbody>${campaigns.map(c => {
+        var openRate = c.sent > 0 ? Math.round((c.opens||0)/c.sent*100) : 0;
+        return `<tr>
+          <td><div style="font-weight:600;font-size:14px;">${escapeHtml(c.name)}</div><div style="color:#666;font-size:12px;">${escapeHtml(c.subject||'')}</div></td>
+          <td><span class="badge">${typeLabels[c.type]||c.type}</span></td>
+          <td><span style="color:${statusColors[c.status]||'#999'};font-size:12px;font-weight:600;">● ${{active:'Aktivní',sent:'Odesláno',draft:'Koncept',paused:'Pozastaveno'}[c.status]||c.status}</span></td>
+          <td style="text-align:center;">${formatPrice(c.sent||0)}</td>
+          <td style="text-align:center;${openRate>30?'color:#4f4;':openRate>15?'color:#fa0;':''}font-weight:600;">${openRate}%</td>
+          <td style="text-align:center;">${c.clicks||0}</td>
+          <td style="color:#666;font-size:12px;">${formatDate(c.created||c.created_at)}</td>
+        </tr>`}).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function showCampaignForm() {
+  var el = document.getElementById('campaign-form');
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function createCampaign() {
+  var name = document.getElementById('camp-name')?.value?.trim();
+  var subject = document.getElementById('camp-subject')?.value?.trim();
+  if (!name || !subject) { showToast('Vyplňte název a předmět'); return; }
+  try {
+    var sb = await getSupabase();
+    await sb.from('email_campaigns').insert([{
+      name, subject, body: document.getElementById('camp-body')?.value || '',
+      type: document.getElementById('camp-type')?.value || 'newsletter',
+      status: document.getElementById('camp-schedule')?.value === 'draft' ? 'draft' : 'active',
+      sent: 0, opens: 0, clicks: 0
+    }]);
+  } catch(e) {}
+  showToast('✓ Kampaň vytvořena');
+  document.getElementById('campaign-form').style.display = 'none';
+  loadEmailCampaigns();
+}
+
+window.loadEmailCampaigns = loadEmailCampaigns;
+window.showCampaignForm = showCampaignForm;
+window.createCampaign = createCampaign;
+</script>

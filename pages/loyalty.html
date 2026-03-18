@@ -1,0 +1,97 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:900px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Věrnostní program</span></nav>
+    <div style="text-align:center;padding:48px 20px;margin-bottom:36px;background:linear-gradient(135deg,#1a1400,#2a2000);border-radius:12px;border:1px solid rgba(200,169,106,0.2);">
+      <div style="font-size:52px;margin-bottom:12px;">🏆</div>
+      <h1 style="font-size:32px;font-weight:700;margin-bottom:10px;">Věrnostní program</h1>
+      <p style="color:#999;font-size:15px;max-width:500px;margin:0 auto;">Sbírejte body za každý nákup a vyměňte je za slevy a exkluzivní odměny.</p>
+    </div>
+
+    <!-- Points display -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:36px;">
+      <div style="text-align:center;padding:24px;background:#1a1a1a;border-radius:10px;border:1px solid rgba(200,169,106,0.15);">
+        <div style="font-size:40px;font-weight:700;color:#c8a96a;" id="my-points">0</div>
+        <div style="color:#777;font-size:13px;margin-top:4px;">Moje body</div>
+      </div>
+      <div style="text-align:center;padding:24px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+        <div style="font-size:40px;font-weight:700;color:#4af;" id="my-tier">Bronzový</div>
+        <div style="color:#777;font-size:13px;margin-top:4px;">Můj stupeň</div>
+      </div>
+      <div style="text-align:center;padding:24px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+        <div style="font-size:40px;font-weight:700;color:#4f4;" id="points-to-next">500</div>
+        <div style="color:#777;font-size:13px;margin-top:4px;">Do dalšího stupně</div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;">Jak to funguje</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:36px;">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;margin-bottom:10px;">🛍️</div>
+        <div style="font-weight:600;margin-bottom:6px;">Nakupujte</div>
+        <div style="color:#777;font-size:13px;">Za každých 10 Kč nákupu = 1 bod</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;margin-bottom:10px;">⭐</div>
+        <div style="font-weight:600;margin-bottom:6px;">Sbírejte</div>
+        <div style="color:#777;font-size:13px;">Získávejte body za nákupy a recenze</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;margin-bottom:10px;">🎁</div>
+        <div style="font-weight:600;margin-bottom:6px;">Odměňujte se</div>
+        <div style="color:#777;font-size:13px;">100 bodů = sleva 50 Kč</div>
+      </div>
+    </div>
+
+    <!-- Tiers -->
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:20px;">Stupně věrnosti</h2>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:36px;">
+      <div id="loyalty-tiers"></div>
+    </div>
+
+    <div style="text-align:center;padding:28px;background:#111;border-radius:10px;border:1px solid #222;">
+      <p style="color:#777;margin-bottom:16px;font-size:14px;">Přihlaste se nebo vytvořte účet pro přístup k věrnostnímu programu</p>
+      <button onclick="goTo('/my-account')" class="btn-primary" style="padding:12px 28px;">Přihlásit se</button>
+    </div>
+  </div>
+</main>
+
+<script>
+
+function renderLoyaltyTiers() {
+  var el = document.getElementById('loyalty-tiers');
+  if (!el) return;
+  var tiers = [
+    { name:'🥉 Bronzový', range:'0 – 499 bodů',   perks:'5% sleva na každý nákup',         color:'#cd7f32' },
+    { name:'🥈 Stříbrný',  range:'500 – 1999 bodů', perks:'8% sleva + prioritní zpracování',  color:'#aaa' },
+    { name:'🥇 Zlatý',     range:'2000 – 4999 bodů',perks:'12% sleva + bezplatné dárkové balení', color:'#c8a96a' },
+    { name:'💎 Diamantový',range:'5000+ bodů',      perks:'18% sleva + osobní asistent + limitky first', color:'#88f' },
+  ];
+  var html = '';
+  for (var i = 0; i < tiers.length; i++) {
+    var t = tiers[i];
+    html += '<div style="padding:20px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;display:flex;flex-direction:column;gap:8px;">';
+    html += '<div style="font-size:22px;font-weight:700;color:' + t.color + ';">' + t.name + '</div>';
+    html += '<div style="font-size:13px;color:#666;">' + t.range + '</div>';
+    html += '<div style="font-size:14px;color:#ccc;">' + t.perks + '</div>';
+    html += '</div>';
+  }
+  el.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:36px;';
+  el.innerHTML = html;
+}
+
+function loadLoyalty() {
+  var session = Storage.get('user-session');
+  if (session) {
+    var points = Storage.get('loyalty-points', 0);
+    document.getElementById('my-points').textContent = points;
+    var er = 'Bronzový', next = 500 - points;
+    if (points >= 3000) { tier = '💎 Diamantový'; next = 0; }
+    else if (points >= 1500) { tier = '🥇 Zlatý'; next = 3000 - points; }
+    else if (points >= 500) { tier = '🥈 Stříbrný'; next = 1500 - points; }
+    document.getElementById('my-tier').textContent = tier;
+    document.getElementById('points-to-next').textContent = next > 0 ? next : '✓ MAX';
+  }
+}
+window.loadLoyalty = loadLoyalty;
+</script>

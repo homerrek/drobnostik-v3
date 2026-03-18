@@ -1,0 +1,173 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+
+    <div class="admin-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+        <h1 style="font-size:24px;font-weight:700;">Přehled</h1>
+        <div style="font-size:13px;color:#666;" id="dash-date"></div>
+      </div>
+
+      <!-- Stats cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;" id="dash-stats">
+        <div class="loading-spinner"></div>
+      </div>
+
+      <!-- Recent orders -->
+      <div style="background:#111;border:1px solid #222;border-radius:10px;padding:20px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h2 style="font-size:16px;font-weight:700;">Poslední objednávky</h2>
+          <button onclick="goTo('/admin/orders')" class="btn-secondary" style="padding:7px 14px;font-size:12px;">Zobrazit vše</button>
+        </div>
+        <div id="dash-orders"><div class="loading-spinner"></div></div>
+      </div>
+
+      <!-- Málo skladem -->
+      <div style="background:#111;border:1px solid #222;border-radius:10px;padding:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h2 style="font-size:16px;font-weight:700;">⚠️ Málo skladem</h2>
+          <button onclick="goTo('/admin/products')" class="btn-secondary" style="padding:7px 14px;font-size:12px;">Spravovat produkty</button>
+        </div>
+        <div id="dash-lowstock"><div class="loading-spinner"></div></div>
+      </div>
+
+      <!-- Admin audit log -->
+      <div style="background:#111;border:1px solid #222;border-radius:10px;padding:20px;margin-top:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h2 style="font-size:16px;font-weight:700;">🔍 Audit log</h2>
+          <button onclick="clearAuditLog()" style="background:none;border:none;color:#555;cursor:pointer;font-size:12px;">Vymazat</button>
+        </div>
+        <div id="audit-log-list" style="font-size:12px;font-family:monospace;color:#666;line-height:2;max-height:200px;overflow-y:auto;">
+          <div style="color:#555;">Zatím žádné záznamy v tomto sezení...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function loadAdminDash() {
+  if (!checkAdminAuth()) return;
+  // Request notification permission for new order alerts
+  if (typeof requestNotificationPermission === 'function') {
+    requestNotificationPermission().then(granted => {
+      if (granted && typeof startOrderPolling === 'function') startOrderPolling();
+    });
+  }
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('cs-CZ', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  try {
+    var sb = await getSupabase();
+    var [ordersRes, productsRes, subscribersRes] = await Promise.all([
+      sb.from('orders').select('*', { count: 'exact' }),
+      sb.from('products').select('*', { count: 'exact' }),
+      sb.from('newsletter_subscribers').select('*', { count: 'exact' })
+    ]);
+
+    var orders = ordersRes.data || [];
+    var products = productsRes.data || [];
+    var revenue = orders.reduce((s, o) => s + (o.total_amount || 0), 0);
+    var pending = orders.filter(o => o.status === 'pending').length;
+
+    (document.getElementById('dash-stats')||{}).innerHTML = `
+      <div style="padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+        <div style="font-size:11px;color:#666;text-transform:uppercase;margin-bottom:6px;">Celkové objednávky</div>
+        <div style="font-size:32px;font-weight:700;color:#c8a96a;">${orders.length}</div>
+      </div>
+      <div style="padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+        <div style="font-size:11px;color:#666;text-transform:uppercase;margin-bottom:6px;">Čekající</div>
+        <div style="font-size:32px;font-weight:700;color:#fa0;">${pending}</div>
+      </div>
+      <div style="padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+        <div style="font-size:11px;color:#666;text-transform:uppercase;margin-bottom:6px;">Celkový obrat</div>
+        <div style="font-size:32px;font-weight:700;color:#4f4;">${formatPrice(revenue)} Kč</div>
+      </div>
+      <div style="padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+        <div style="font-size:11px;color:#666;text-transform:uppercase;margin-bottom:6px;">Produkty</div>
+        <div style="font-size:32px;font-weight:700;">${products.length}</div>
+      </div>
+      <div style="padding:20px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;">
+        <div style="font-size:11px;color:#666;text-transform:uppercase;margin-bottom:6px;">Odběratelé</div>
+        <div style="font-size:32px;font-weight:700;color:#4af;">${subscribersRes.count || 0}</div>
+      </div>`;
+
+    var recentOrders = orders.slice(0, 5);
+    (document.getElementById('dash-orders')||{}).innerHTML = recentOrders.length ? `
+      <table class="data-table">
+        <thead><tr><th>Objednávka</th><th>Zákazník</th><th>Stav</th><th>Částka</th><th>Datum</th></tr></thead>
+        <tbody>${recentOrders.map(o => `
+          <tr>
+            <td style="font-family:monospace;color:#c8a96a;">${escapeHtml(o.order_number)}</td>
+            <td>${escapeHtml(o.customer_name)}</td>
+            <td><span class="badge">${o.status}</span></td>
+            <td style="font-weight:600;">${formatPrice(o.total_amount)} Kč</td>
+            <td style="color:#666;">${formatDate(o.created_at)}</td>
+          </tr>`).join('')}</tbody>
+      </table>` : '<div style="color:#666;text-align:center;padding:20px;">Žádné objednávky</div>';
+
+    var lowStock = products.filter(p => p.stock_quantity <= 5);
+    (document.getElementById('dash-lowstock')||{}).innerHTML = lowStock.length ? `
+      <table class="data-table">
+        <thead><tr><th>Produkt</th><th>Skladem</th></tr></thead>
+        <tbody>${lowStock.map(p => `
+          <tr>
+            <td>${escapeHtml(p.name)}</td>
+            <td><span style="color:${p.stock_quantity === 0 ? '#f44' : '#fa0'};font-weight:700;">${p.stock_quantity || 0} ks</span></td>
+          </tr>`).join('')}</tbody>
+      </table>` : '<div style="color:#4f4;text-align:center;padding:20px;">✓ Vše skladem</div>';
+
+  } catch (e) {
+    (document.getElementById('dash-stats')||{}).innerHTML = `<div style="color:#f44;grid-column:1/-1;">Chyba: ${e.message}</div>`;
+  }
+}
+
+function checkAdminAuth() {
+  var auth = sessionStorage.getItem('admin-auth');
+  if (!auth) { goTo('/admin/login'); return false; }
+  return true;
+}
+
+var AuditLog = {
+  add(action, detail = '') {
+    var logs = JSON.parse(sessionStorage.getItem('audit_log') || '[]');
+    logs.unshift({ action, detail, time: new Date().toLocaleTimeString('cs-CZ'), user: sessionStorage.getItem('admin-auth') ? 'admin' : '?' });
+    if (logs.length > 50) logs.pop();
+    sessionStorage.setItem('audit_log', JSON.stringify(logs));
+  },
+  render(containerId) {
+    var el = document.getElementById(containerId);
+    if (!el) return;
+    var logs = JSON.parse(sessionStorage.getItem('audit_log') || '[]');
+    if (!logs.length) { el.innerHTML = '<div style="color:#555;">Zatím žádné záznamy v tomto sezení...</div>'; return; }
+    el.innerHTML = logs.map(l => `<div><span style="color:#444;">[${l.time}]</span> <span style="color:#c8a96a;">${escapeHtml(l.user)}</span> → <span style="color:#ccc;">${escapeHtml(l.action)}</span>${l.detail ? ` <span style="color:#555;">(${escapeHtml(l.detail)})</span>` : ''}</div>`).join('');
+  }
+};
+
+function clearAuditLog() {
+  sessionStorage.removeItem('audit_log');
+  AuditLog.render('audit-log-list');
+}
+
+window.AuditLog = AuditLog;
+window.clearAuditLog = clearAuditLog;
+window.loadAdminDash = loadAdminDash;
+window.checkAdminAuth = checkAdminAuth;
+</script>

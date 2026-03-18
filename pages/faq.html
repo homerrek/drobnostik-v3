@@ -1,0 +1,69 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:800px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">FAQ</span></nav>
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">❓ Časté dotazy</h1>
+    <p style="color:#777;margin-bottom:32px;font-size:15px;">Odpovědi na nejčastěji kladené otázky.</p>
+    <div id="faq-list"><div class="loading-spinner"></div></div>
+
+    <!-- Static FAQ fallback -->
+    <div id="faq-static" style="display:none;"></div>
+
+    <div style="margin-top:40px;padding:24px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;text-align:center;">
+      <div style="font-size:24px;margin-bottom:12px;">💬</div>
+      <h3 style="margin-bottom:8px;">Nenašli jste odpověď?</h3>
+      <p style="color:#777;font-size:14px;margin-bottom:16px;">Napište nám a odpovíme do 24 hodin.</p>
+      <button onclick="goTo('/contact')" class="btn-primary" style="padding:11px 24px;">Kontaktovat nás</button>
+    </div>
+  </div>
+</main>
+
+<script>
+var staticFaq = [
+  { question: 'Z čeho jsou Pokebally vyrobeny?', answer: 'Používáme prémiový PLA filament pro FDM 3D tisk. Materiál je biologicky rozložitelný, odolný a vhodný pro sbírky i každodenní použití.' },
+  { question: 'Jak dlouho trvá výroba?', answer: 'Standardně 3-5 pracovních dní. Pokud máme produkt skladem, odesíláme tentýž den nebo druhý den.' },
+  { question: 'Mohu si vybrat barvu?', answer: 'Ano! Nabízíme tři barvy: černou, bílou a šedou. Vyberte si při objednávce.' },
+  { question: 'Jaké jsou možnosti doručení?', answer: 'Standardní zásilka (3-5 dní, 99 Kč), expres (1-2 dny, 249 Kč) nebo osobní odběr v Night City zdarma.' },
+  { question: 'Mohu vrátit zboží?', answer: 'Ano, zboží lze vrátit do 14 dní od doručení bez udání důvodu. Produkt musí být v původním stavu.' },
+  { question: 'Jsou Pokebally vhodné jako dárky?', answer: 'Rozhodně! Nabízíme i dárkové balení. Napište nám při objednávce nebo nás kontaktujte předem.' },
+];
+
+async function loadFAQ() {
+  var list = document.getElementById('faq-list');
+  if (!list) return;
+  try {
+    var sb = await getSupabase();
+    var { data, error } = await sb.from('faq').select('*').eq('is_visible', true).order('sort_order');
+    var faqItems = (data && data.length > 0) ? data : staticFaq;
+    renderFAQ(faqItems);
+  } catch (e) {
+    renderFAQ(staticFaq);
+  }
+}
+
+function renderFAQ(items) {
+  var list = document.getElementById('faq-list');
+  if (!list) return;
+  list.innerHTML = items.map((item, i) => `
+    <div style="border-bottom:1px solid #1e1e1e;overflow:hidden;border-radius:6px;margin-bottom:8px;background:#1a1a1a;border:1px solid #2a2a2a;">
+      <button onclick="toggleFaq(${i})" style="width:100%;text-align:left;padding:18px 20px;background:none;border:none;color:#fff;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:15px;font-weight:600;">
+        <span>${escapeHtml(item.question)}</span>
+        <span id="faq-icon-${i}" style="color:#c8a96a;font-size:20px;min-width:20px;text-align:center;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faq-answer-${i}" style="display:none;padding:0 20px 18px;color:#999;font-size:14px;line-height:1.8;">
+        ${escapeHtml(item.answer)}
+      </div>
+    </div>`).join('');
+}
+
+function toggleFaq(i) {
+  var answer = document.getElementById('faq-answer-' + i);
+  var icon = document.getElementById('faq-icon-' + i);
+  if (!answer) return;
+  var isOpen = answer.style.display !== 'none';
+  answer.style.display = isOpen ? 'none' : 'block';
+  if (icon) { icon.textContent = isOpen ? '+' : '−'; icon.style.transform = isOpen ? 'rotate(0)' : 'rotate(180deg)'; }
+}
+
+window.loadFAQ = loadFAQ;
+window.toggleFaq = toggleFaq;
+</script>

@@ -1,0 +1,70 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:20px;">👥 Zákazníci</h1>
+      <div id="customers-list"><div class="loading-spinner"></div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function loadAdminCustomers() {
+  if (!checkAdminAuth()) return;
+  var el = document.getElementById('customers-list');
+  if (!el) return;
+  try {
+    var sb = await getSupabase();
+    var { data: orders } = await sb.from('orders').select('customer_name, customer_email, customer_city, total_price, created_at').order('created_at', { ascending: false });
+    if (!orders?.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">Žádní zákazníci</div>'; return; }
+
+    // Aggregate by email
+    var customers = {};
+    orders.forEach(o => {
+      var key = o.customer_email || o.customer_name;
+      if (!customers[key]) {
+        customers[key] = { name: o.customer_name, email: o.customer_email, city: o.customer_city, orders: 0, total: 0, last: o.created_at };
+      }
+      customers[key].orders++;
+      customers[key].total += o.total_price || 0;
+      if (o.created_at > customers[key].last) customers[key].last = o.created_at;
+    });
+
+    var sorted = Object.values(customers).sort((a, b) => b.total - a.total);
+
+    el.innerHTML = `<table class="data-table">
+      <thead><tr><th>Jméno</th><th>Email</th><th>Město</th><th>Objednávky</th><th>Útrata celkem</th><th>Poslední nákup</th></tr></thead>
+      <tbody>${sorted.map(c => `
+        <tr>
+          <td style="font-weight:600;">${escapeHtml(c.name)}</td>
+          <td style="color:#777;font-size:13px;">${escapeHtml(c.email || '—')}</td>
+          <td style="color:#777;font-size:13px;">${escapeHtml(c.city || '—')}</td>
+          <td style="text-align:center;font-weight:600;">${c.orders}</td>
+          <td style="font-weight:700;color:#c8a96a;">${formatPrice(c.total)} Kč</td>
+          <td style="color:#666;font-size:12px;">${formatDate(c.last)}</td>
+        </tr>`).join('')}
+      </tbody></table>`;
+  } catch(e) {
+    el.innerHTML = `<div style="color:#f44;padding:20px;">Chyba: ${e.message}</div>`;
+  }
+}
+window.loadAdminCustomers = loadAdminCustomers;
+</script>

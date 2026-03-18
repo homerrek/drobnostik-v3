@@ -1,0 +1,118 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h1 style="font-size:22px;font-weight:700;">📝 Blog management</h1>
+        <button onclick="showBlogForm()" class="btn-primary" style="padding:9px 18px;">+ Nový příspěvek</button>
+      </div>
+
+      <div id="blog-post-form" style="display:none;background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:20px;margin-bottom:20px;">
+        <h2 style="font-size:15px;margin-bottom:14px;">Nový příspěvek</h2>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div><label>Nadpis *</label><input id="bp-title" type="text" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Slug (URL)</label><input id="bp-slug" type="text" placeholder="automaticky z nadpisu" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div><label>Kategorie</label>
+              <select id="bp-category" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;">
+                <option value="novinky">Novinky</option><option value="tipy">Tipy & triky</option>
+                <option value="za-kulisami">Za kulisami</option><option value="komunita">Komunita</option>
+              </select>
+            </div>
+            <div><label>Čas čtení (min)</label><input id="bp-reading" type="number" value="3" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;"></div>
+            <div><label>Status</label>
+              <select id="bp-status" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;">
+                <option value="draft">Koncept</option><option value="published">Publikovaný</option>
+              </select>
+            </div>
+          </div>
+          <div><label>Perex (úryvek)</label><textarea id="bp-excerpt" rows="2" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;resize:vertical;"></textarea></div>
+          <div><label>Obsah (HTML)</label><textarea id="bp-content" rows="6" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-family:monospace;font-size:13px;resize:vertical;"></textarea></div>
+          <div style="display:flex;gap:10px;">
+            <button onclick="saveBlogPost()" class="btn-primary" style="padding:9px 20px;">Uložit</button>
+            <button onclick="document.getElementById('blog-post-form').style.display='none'" class="btn-secondary" style="padding:9px 14px;">Zrušit</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="admin-blog-list"><div class="loading-spinner"></div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function loadAdminBlog() {
+  if (!checkAdminAuth()) return;
+  var el = document.getElementById('admin-blog-list');
+  if (!el) return;
+  try {
+    var sb = await getSupabase();
+    var { data: posts, error } = await sb.from('blog_posts').select('*').order('created_at', { ascending: false });
+    if (error) { el.innerHTML = '<div style="color:#777;padding:20px;">Tabulka blog_posts neexistuje — statické příspěvky jsou dostupné na /blog</div>'; return; }
+    if (!posts?.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">Žádné příspěvky</div>'; return; }
+    el.innerHTML = `<table class="data-table">
+      <thead><tr><th>Nadpis</th><th>Kategorie</th><th>Status</th><th>Datum</th><th>Akce</th></tr></thead>
+      <tbody>${posts.map(p => `
+        <tr>
+          <td style="font-weight:600;">${escapeHtml(p.title)}</td>
+          <td style="color:#777;font-size:13px;">${escapeHtml(p.category||'—')}</td>
+          <td><span class="badge ${p.status==='published'?'badge-success':'badge-warning'}">${p.status}</span></td>
+          <td style="color:#666;font-size:12px;">${formatDate(p.created_at)}</td>
+          <td><button onclick="deleteBlogPost(${p.id})" style="background:rgba(244,68,68,0.1);color:#f44;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;">Smazat</button></td>
+        </tr>`).join('')}
+      </tbody></table>`;
+  } catch(e) { el.innerHTML = '<div style="color:#777;padding:20px;">Blog příspěvky jsou statické — viz /blog</div>'; }
+}
+
+async function showBlogForm() {
+  var el = document.getElementById('blog-post-form');
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function saveBlogPost() {
+  var title = document.getElementById('bp-title')?.value?.trim();
+  if (!title) { showToast('Vyplňte nadpis'); return; }
+  var slug = document.getElementById('bp-slug')?.value?.trim() || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  try {
+    var sb = await getSupabase();
+    await sb.from('blog_posts').insert([{
+      title, slug, excerpt: document.getElementById('bp-excerpt')?.value || '',
+      content: document.getElementById('bp-content')?.value || '',
+      category: document.getElementById('bp-category')?.value || 'novinky',
+      reading_time: parseInt(document.getElementById('bp-reading')?.value) || 3,
+      status: document.getElementById('bp-status')?.value || 'draft',
+      author: 'Admin', published_at: new Date().toISOString()
+    }]);
+    showToast('✓ Příspěvek uložen'); document.getElementById('blog-post-form').style.display = 'none'; loadAdminBlog();
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+
+async function deleteBlogPost(id) {
+  if (!confirm('Smazat příspěvek?')) return;
+  var sb = await getSupabase(); await sb.from('blog_posts').delete().eq('id', id);
+  showToast('Smazáno'); loadAdminBlog();
+}
+
+window.loadAdminBlog = loadAdminBlog;
+window.showBlogForm = showBlogForm;
+window.saveBlogPost = saveBlogPost;
+window.deleteBlogPost = deleteBlogPost;
+</script>

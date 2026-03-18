@@ -1,0 +1,58 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#666;margin-bottom:16px;">
+      <a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;text-decoration:none;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a>
+      <span style="color:#444;">›</span>
+      <span style="color:#999;">Obchod</span>
+    </nav>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;flex-wrap:wrap;gap:16px;">
+      <div>
+        <h1 style="font-size:32px;font-weight:700;margin-bottom:6px;">Obchod</h1>
+        <p style="color:#777;font-size:14px;" id="product-count"></p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="position:relative;">
+          <input id="shop-search" type="text" placeholder="🔍 Hledat..."
+            style="padding:10px 14px;width:200px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;"
+            oninput="loadShop()" autocomplete="off">
+          <div id="shop-autocomplete" class="search-suggestions" style="display:none;"></div>
+        </div>
+        <select id="filter-category" onchange="loadShop()"
+          style="padding:10px 14px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;">
+          <option value="">Všechny kategorie</option>
+          <option value="Pokebally">Pokebally</option>
+          <option value="Miniatures">Miniatures</option>
+          <option value="Ostatní">Ostatní</option>
+        </select>
+        <select id="filter-sort" onchange="loadShop()"
+          style="padding:10px 14px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;">
+          <option value="newest">Nejnovější</option>
+          <option value="price_asc">Cena: nejnižší</option>
+          <option value="price_desc">Cena: nejvyšší</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="products-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof loadShop === 'function') loadShop();
+});
+
+// Update product count after shop loads (no recursive override needed)
+setTimeout(function() {
+  initSearchAutocomplete('shop-search', 'shop-autocomplete');
+}, 800);
+
+setTimeout(function() {
+  var grid = document.getElementById('products-grid');
+  var count = grid ? grid.querySelectorAll('.product-card').length : 0;
+  var countEl = document.getElementById('product-count');
+  if (countEl && count > 0) countEl.textContent = count + ' produktů';
+}, 1500);
+</script>

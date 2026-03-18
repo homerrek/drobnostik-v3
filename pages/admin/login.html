@@ -1,0 +1,46 @@
+<main style="padding:40px 20px;display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 160px);">
+  <div style="width:100%;max-width:380px;">
+      <div style="text-align:center;margin-bottom:28px;">
+        <img src="/images/logo.png" alt="Drobnostík" style="height:56px;width:auto;margin-bottom:12px;">
+        <h1 style="font-size:22px;font-weight:700;margin-bottom:4px;">Admin přihlášení</h1>
+        <p style="color:#666;font-size:14px;">Drobnostík – správcovský panel</p>
+      </div>
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:28px;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label for="admin-user">Uživatelské jméno</label>
+          <input id="admin-user" type="text" placeholder="admin" style="width:100%;padding:11px;" autocomplete="username">
+        </div>
+        <div>
+          <label for="admin-pass">Heslo</label>
+          <input id="admin-pass" type="password" placeholder="••••••••" style="width:100%;padding:11px;" autocomplete="current-password"
+            onkeypress="if(event.key==='Enter') adminLogin()">
+        </div>
+        <button onclick="adminLogin()" class="btn-primary" style="width:100%;padding:13px;font-size:15px;">Přihlásit se</button>
+      </div>
+      <div id="login-error" style="display:none;color:#f44;font-size:13px;text-align:center;margin-top:12px;"></div>
+    </div>
+    <div style="text-align:center;margin-top:16px;">
+      <button onclick="goTo('/')" style="background:none;border:none;color:#666;font-size:13px;cursor:pointer;">← Zpět na obchod</button>
+    </div>
+  </div>
+</main>
+
+<script>
+function adminLogin() {
+  var user = document.getElementById('admin-user')?.value?.trim();
+  var pass = document.getElementById('admin-pass')?.value;
+  var errEl = document.getElementById('login-error');
+  if (!user || !pass) { if(errEl) { errEl.textContent = 'Vyplňte přihlašovací údaje'; errEl.style.display = 'block'; } return; }
+  var cfg = window.SUPABASE_CONFIG || SUPABASE_CONFIG;
+  if (user === cfg.ADMIN_USER && pass === cfg.ADMIN_PASS) {
+    sessionStorage.setItem('admin-auth', 'true');
+    showToast('✓ Přihlášení úspěšné');
+    goTo('/admin');
+  } else {
+    if(errEl) { errEl.textContent = '❌ Nesprávné přihlašovací údaje'; errEl.style.display = 'block'; }
+    showToast('Nesprávné přihlašovací údaje');
+  }
+}
+window.adminLogin = adminLogin;
+</script>

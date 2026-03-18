@@ -1,0 +1,191 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:1000px;margin:0 auto;">
+    <div id="help-breadcrumb" style="margin-bottom:8px;"></div>
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">📚 Centrum nápovědy</h1>
+    <p style="color:#777;margin-bottom:28px;font-size:15px;">Vše co potřebujete vědět o Drobnostíku</p>
+
+    <!-- Search in help -->
+    <div style="position:relative;margin-bottom:36px;">
+      <input id="help-search" type="text" placeholder="Hledat v nápovědě..."
+        style="width:100%;padding:14px 20px 14px 48px;border:1px solid #333;border-radius:10px;background:#1a1a1a;color:#fff;font-size:15px;"
+        oninput="filterHelpArticles(this.value)" aria-label="Hledat v nápovědě">
+      <span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none;">🔍</span>
+    </div>
+
+    <!-- Categories grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:40px;" id="help-categories">
+      <a href="#orders" onclick="scrollToSection('help-orders')" style="text-decoration:none;">
+        <div class="card" style="padding:22px;text-align:center;cursor:pointer;">
+          <div style="font-size:36px;margin-bottom:10px;">🛒</div>
+          <h3 style="font-size:15px;margin-bottom:6px;">Objednávky</h3>
+          <p style="color:#777;font-size:13px;">Jak objednat, sledovat, zrušit</p>
+        </div>
+      </a>
+      <a href="#shipping" onclick="scrollToSection('help-shipping')" style="text-decoration:none;">
+        <div class="card" style="padding:22px;text-align:center;cursor:pointer;">
+          <div style="font-size:36px;margin-bottom:10px;">📦</div>
+          <h3 style="font-size:15px;margin-bottom:6px;">Doručení</h3>
+          <p style="color:#777;font-size:13px;">Doprava, časy, sledování</p>
+        </div>
+      </a>
+      <a href="#products" onclick="scrollToSection('help-products')" style="text-decoration:none;">
+        <div class="card" style="padding:22px;text-align:center;cursor:pointer;">
+          <div style="font-size:36px;margin-bottom:10px;">🎮</div>
+          <h3 style="font-size:15px;margin-bottom:6px;">Produkty</h3>
+          <p style="color:#777;font-size:13px;">Materiály, rozměry, péče</p>
+        </div>
+      </a>
+      <a href="#account" onclick="scrollToSection('help-account')" style="text-decoration:none;">
+        <div class="card" style="padding:22px;text-align:center;cursor:pointer;">
+          <div style="font-size:36px;margin-bottom:10px;">👤</div>
+          <h3 style="font-size:15px;margin-bottom:6px;">Účet</h3>
+          <p style="color:#777;font-size:13px;">Registrace, heslo, data</p>
+        </div>
+      </a>
+      <a href="#returns" onclick="scrollToSection('help-returns')" style="text-decoration:none;">
+        <div class="card" style="padding:22px;text-align:center;cursor:pointer;">
+          <div style="font-size:36px;margin-bottom:10px;">↩️</div>
+          <h3 style="font-size:15px;margin-bottom:6px;">Vrácení & reklamace</h3>
+          <p style="color:#777;font-size:13px;">14 dní bez udání důvodu</p>
+        </div>
+      </a>
+      <a href="#payments" onclick="scrollToSection('help-payments')" style="text-decoration:none;">
+        <div class="card" style="padding:22px;text-align:center;cursor:pointer;">
+          <div style="font-size:36px;margin-bottom:10px;">💳</div>
+          <h3 style="font-size:15px;margin-bottom:6px;">Platby</h3>
+          <p style="color:#777;font-size:13px;">Metody platby, kupóny</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Article sections -->
+    <div id="help-articles"><div class="loading-spinner"></div></div>
+
+    <!-- Still need help? -->
+    <div style="text-align:center;padding:36px;background:linear-gradient(135deg,#111,#1a1a1a);border-radius:12px;border:1px solid #2a2a2a;margin-top:20px;">
+      <div style="font-size:36px;margin-bottom:12px;">💬</div>
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:10px;">Nenašli jste odpověď?</h2>
+      <p style="color:#777;margin-bottom:20px;font-size:14px;">Náš tým odpoví do 24 hodin.</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button onclick="goTo('/support')" class="btn-primary" style="padding:12px 24px;">🎫 Otevřít ticket</button>
+        <button onclick="goTo('/live-chat')" class="btn-secondary" style="padding:12px 20px;">💬 Live chat</button>
+        <a href="mailto:info@drobnostik.cz" class="btn-secondary" style="padding:12px 20px;text-decoration:none;">✉️ Email</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+var HELP_SECTIONS = [
+  { id:'help-orders', icon:'🛒', title:'Objednávky & doručení', articles:[
+    { q:'Jak vytvořit objednávku?', a:'Vyberte produkt v obchodě, zvolte barvu a velikost, přidejte do košíku a dokončete v pokladně. Celý proces trvá méně než 2 minuty.' },
+    { q:'Jak sleduji svou objednávku?', a:'Na stránce Sledovat objednávku zadejte číslo objednávky (formát ORD-xxxxxxxxxx). Číslo najdete v potvrzovacím emailu.' },
+    { q:'Kdy dostanu potvrzení objednávky?', a:'Potvrzovací email přijde okamžitě po odeslání. Pokud nepřišel, zkontrolujte složku spam nebo nás kontaktujte.' },
+    { q:'Mohu změnit nebo zrušit objednávku?', a:'Ano, ale pouze pokud ještě nebyla expedována. Kontaktujte nás co nejdříve na info@drobnostik.cz nebo +420 777 123 456.' },
+    { q:'Jak dlouho trvá doručení?', a:'Zásilkovna výdejní místo: 1–2 dny. PPL/DPD domů: 1–2 dny. Česká pošta: 2–4 dny. DHL Express: garantovaně do druhého dne. Výroba: 2–4 pracovní dny navíc.' },
+  ]},
+  { id:'help-shipping', icon:'📦', title:'Doprava', articles:[
+    { q:'Jaké jsou možnosti doručení?', a:'Zásilkovna (výdejní místo, 79 Kč), Zásilkovna domů (119 Kč), PPL (129 Kč), DPD (139 Kč), Česká pošta Do ruky (99 Kč), DHL Express (299 Kč), Osobní odběr Night City (zdarma). Doprava zdarma od 1 500 Kč.' },
+    { q:'Do jakých zemí doručujete?', a:'Primárně Česká republika a Slovensko. Pro ostatní země nás kontaktujte — individuální dohoda.' },
+    { q:'Co když zásilka nepřijde?', a:'Po 7 dnech od expedice nás kontaktujte. Prověříme stav zásilky a v případě ztráty zásilku zopakujeme nebo vrátíme peníze.' },
+    { q:'Kde si vyzvednu zásilku na Zásilkovně?', a:'Výdejní místo si volíte při objednávce. Seznam míst najdete na zasilkovna.cz. Zásilka čeká 7 dní.' },
+  ]},
+  { id:'help-products', icon:'🎮', title:'Produkty', articles:[
+    { q:'Z jakého materiálu jsou pokebally?', a:'Používáme prémiový PLA+ filament — biologicky rozložitelný, pevný a bezpečný. Každý kus je ručně finišován pro hladký povrch.' },
+    { q:'Jaké jsou přesné rozměry?', a:'Small: průměr ~6 cm, výška ~5,5 cm, hmotnost ~80 g. Standard: průměr ~8 cm, výška ~7,5 cm, hmotnost ~160 g. Maxi: průměr ~11 cm, výška ~10 cm, hmotnost ~350 g.' },
+    { q:'Jak pečovat o pokeball?', a:'Vyhněte se teplotám nad 60 °C a přímému slunci. Čistěte suchým hadříkem z mikrovlákna. Nikdy nepoužívejte aceton — rozpouští PLA+!' },
+    { q:'Lze produkt personalizovat?', a:'Ano — gravírování nebo vlastní barvy jsou možné pro objednávky 5+ kusů. Napište nám na info@drobnostik.cz.' },
+    { q:'Jsou pokebally bezpečné pro děti?', a:'Ano, PLA+ je netoxický materiál. Pokebally nejsou hračky — jsou to sběratelské předměty. Nedoporučujeme pro děti do 3 let kvůli malým dílům.' },
+  ]},
+  { id:'help-returns', icon:'↩️', title:'Vrácení & reklamace', articles:[
+    { q:'Jak vrátit zboží?', a:'Pošlete email na info@drobnostik.cz s číslem objednávky. Po schválení zabalte zboží do původního obalu a odešlete na naši adresu v Night City. Peníze vrátíme do 14 dní.' },
+    { q:'Zboží přišlo poškozené — co dělat?', a:'Okamžitě nás kontaktujte s fotografiemi poškozené zásilky. Poškozené zboží vyměníme nebo vrátíme peníze bez nutnosti vracení.' },
+    { q:'Jaká je záruční doba?', a:'Ze zákona 24 měsíců. Na výrobní vady poskytujeme náhradu nebo opravu zdarma. Reklamace vyřídíme do 30 dní.' },
+    { q:'Do kdy mohu vrátit zboží?', a:'Do 14 dní od doručení bez udání důvodu. Zboží musí být v původním stavu a nepoužívané.' },
+  ]},
+  { id:'help-account', icon:'👤', title:'Zákaznický účet', articles:[
+    { q:'Mohu nakoupit bez registrace?', a:'Ano, nákup jako host je plně podporován. Účet není nutný.' },
+    { q:'Jak vytvořit účet?', a:'Na stránce Můj účet klikněte na záložku Registrovat se. Zadejte jméno, email a heslo. Dostanete potvrzovací email.' },
+    { q:'Jak smazat svůj účet?', a:'V nastavení účtu nebo emailem na info@drobnostik.cz. Data smažeme do 30 dní (GDPR).' },
+    { q:'Zapomněl jsem heslo', a:'Na přihlašovací stránce klikněte Zapomenuté heslo a zadejte email. Odkaz na reset přijde do pár minut.' },
+  ]},
+  { id:'help-payments', icon:'💳', title:'Platby & kupóny', articles:[
+    { q:'Jaké jsou způsoby platby?', a:'Platební karta (přímo na webu), bankovní převod předem, dobírka při doručení (+30 Kč). Přijímáme Visa, Mastercard, Maestro, American Express.' },
+    { q:'Jak uplatnit slevový kód?', a:'V pokladně v poli Slevový kód zadejte kód a klikněte Uplatnit. Sleva se automaticky odečte. Aktuální kupóny: VITEJ10, NEWSLETTER, DROBNO15.' },
+    { q:'Dostanu fakturu?', a:'Ano — faktura přijde emailem ihned po objednávce. V historii objednávek si ji můžete kdykoli vytisknout nebo stáhnout.' },
+    { q:'Je platba kartou bezpečná?', a:'Ano. Používáme 256-bit SSL šifrování a PCI DSS standard. Číslo vaší karty není nikdy ukládáno na našich serverech.' },
+  ]},
+];
+
+function renderHelpArticles(sections) {
+  var el = document.getElementById('help-articles');
+  if (!el) return;
+  el.innerHTML = sections.map(section => `
+    <div id="${section.id}" style="margin-bottom:36px;">
+      <h2 style="font-size:20px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+        <span>${section.icon}</span> ${escapeHtml(section.title)}
+      </h2>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        ${section.articles.map((a, i) => `
+          <div class="help-article" style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;">
+            <button onclick="toggleHelp('${section.id}-${i}')"
+              style="width:100%;text-align:left;padding:16px 20px;background:none;border:none;color:#ccc;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px;font-weight:600;"
+              aria-expanded="false" aria-controls="${section.id}-${i}-body">
+              <span>${escapeHtml(a.q)}</span>
+              <span id="${section.id}-${i}-icon" style="color:#c8a96a;font-size:18px;min-width:20px;text-align:center;transition:transform 0.3s;">+</span>
+            </button>
+            <div id="${section.id}-${i}-body" style="display:none;padding:0 20px 16px;color:#999;font-size:14px;line-height:1.8;">
+              ${escapeHtml(a.a)}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function loadHelp() {
+  renderHelpArticles(HELP_SECTIONS);
+  var breadcrumbEl = document.getElementById('help-breadcrumb');
+  if (breadcrumbEl && typeof renderBreadcrumb === 'function') {
+    breadcrumbEl.innerHTML = renderBreadcrumb([{ label:'Domů', href:'/' }, { label:'Centrum nápovědy' }]);
+  }
+}
+window.loadHelp = loadHelp;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof loadHelp === 'function') loadHelp();
+});
+
+function toggleHelp(id) {
+  var body = document.getElementById(id + '-body');
+  var icon = document.getElementById(id + '-icon');
+  var btn = body?.previousElementSibling;
+  if (!body) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (icon) { icon.textContent = isOpen ? '+' : '−'; icon.style.transform = isOpen ? '' : 'rotate(45deg)'; }
+  if (btn) btn.setAttribute('aria-expanded', String(!isOpen));
+}
+
+function scrollToSection(id) {
+  var el = document.getElementById(id);
+  if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+}
+
+function filterHelpArticles(query) {
+  var q = query.toLowerCase();
+  document.querySelectorAll('.help-article').forEach(article => {
+    var text = article.textContent.toLowerCase();
+    article.style.display = !q || text.includes(q) ? '' : 'none';
+  });
+}
+
+// Breadcrumb
+if (typeof renderBreadcrumb !== 'undefined') {
+  var el = document.getElementById('help-breadcrumb');
+  if (el) el.innerHTML = renderBreadcrumb([{ label:'Domů', href:'/' }, { label:'Centrum nápovědy' }]);
+}
+
+window.toggleHelp = toggleHelp;
+window.scrollToSection = scrollToSection;
+window.filterHelpArticles = filterHelpArticles;
+</script>

@@ -1,0 +1,148 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:900px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;">
+      <a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a>
+      <span style="color:#444;font-size:12px;"> › </span>
+      <span style="color:#999;font-size:13px;">Dárkové poukazy</span>
+    </nav>
+
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">🎁 Dárkové poukazy</h1>
+    <img src="/images/pokebowl-gift-box.jpg" alt="Pokeball v dárkovém balení s červenou stužkou" style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;margin:16px 0 24px;" loading="lazy">
+    <p style="color:#777;margin-bottom:32px;font-size:15px;">Ideální dárek — nechejte výběr na obdarovaném.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-bottom:36px;" class="grid-contact">
+      <!-- Buy gift card -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:28px;">
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:20px;">💳 Koupit poukaz</h2>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <label>Hodnota poukazu *</label>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px;" id="amount-grid">
+              <button onclick="selectAmount(200)" data-amount="200" class="amount-btn" style="padding:12px;background:#2a2a2a;border:2px solid #333;border-radius:6px;color:#ccc;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s;">200 Kč</button>
+              <button onclick="selectAmount(500)" data-amount="500" class="amount-btn" style="padding:12px;background:rgba(200,169,106,0.1);border:2px solid #c8a96a;border-radius:6px;color:#c8a96a;cursor:pointer;font-size:14px;font-weight:700;">500 Kč</button>
+              <button onclick="selectAmount(1000)" data-amount="1000" class="amount-btn" style="padding:12px;background:#2a2a2a;border:2px solid #333;border-radius:6px;color:#ccc;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s;">1 000 Kč</button>
+              <button onclick="selectAmount(1500)" data-amount="1500" class="amount-btn" style="padding:12px;background:#2a2a2a;border:2px solid #333;border-radius:6px;color:#ccc;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s;">1 500 Kč</button>
+              <button onclick="selectAmount(2000)" data-amount="2000" class="amount-btn" style="padding:12px;background:#2a2a2a;border:2px solid #333;border-radius:6px;color:#ccc;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.2s;">2 000 Kč</button>
+              <div style="position:relative;">
+                <input id="custom-amount" type="number" placeholder="Vlastní" min="100" max="10000"
+                  style="width:100%;padding:12px;border:2px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;font-size:14px;text-align:center;"
+                  oninput="selectAmount(parseInt(this.value)||0)">
+              </div>
+            </div>
+          </div>
+          <div><label>Email příjemce *</label><input id="gc-recipient-email" type="email" placeholder="pritel@email.cz" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Jméno příjemce</label><input id="gc-recipient-name" type="text" placeholder="Jan Novák" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Osobní zpráva</label><textarea id="gc-message" rows="3" placeholder="Milý Jano, přeji ti krásný dar..." style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;resize:vertical;"></textarea></div>
+          <div><label>Váš email (pro potvrzení)</label><input id="gc-buyer-email" type="email" placeholder="vy@email.cz" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+        </div>
+        <div style="margin-top:20px;padding:14px;background:#111;border-radius:8px;font-size:13px;color:#777;">
+          <div style="font-size:16px;font-weight:700;color:#c8a96a;margin-bottom:4px;" id="gc-price-display">Celková cena: 500 Kč</div>
+          <div>Poukaz bude odeslán emailem do 15 minut po platbě.</div>
+        </div>
+        <button onclick="purchaseGiftCard()" class="btn-primary" style="width:100%;padding:14px;font-size:15px;margin-top:16px;">🎁 Koupit dárkový poukaz</button>
+      </div>
+
+      <!-- Redeem gift card -->
+      <div>
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:24px;margin-bottom:16px;">
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">🔑 Uplatnit poukaz</h2>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div><label>Kód poukazu *</label><input id="gc-redeem-code" type="text" placeholder="GC-XXXXXXXX" style="width:100%;padding:11px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#c8a96a;font-family:monospace;font-weight:700;font-size:15px;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()"></div>
+            <button onclick="checkGiftCard()" class="btn-primary" style="padding:11px;font-size:14px;">Zkontrolovat zůstatek</button>
+          </div>
+          <div id="gc-check-result" style="margin-top:12px;"></div>
+        </div>
+
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:24px;">
+          <h2 style="font-size:16px;font-weight:700;margin-bottom:14px;">ℹ️ Jak to funguje</h2>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;gap:12px;"><span style="color:#c8a96a;font-weight:700;min-width:20px;">1.</span><span style="color:#999;font-size:14px;">Zakoupíte poukaz v libovolné hodnotě</span></div>
+            <div style="display:flex;gap:12px;"><span style="color:#c8a96a;font-weight:700;min-width:20px;">2.</span><span style="color:#999;font-size:14px;">Příjemce dostane kód emailem do 15 minut</span></div>
+            <div style="display:flex;gap:12px;"><span style="color:#c8a96a;font-weight:700;min-width:20px;">3.</span><span style="color:#999;font-size:14px;">Kód zadá v košíku jako slevový kód</span></div>
+            <div style="display:flex;gap:12px;"><span style="color:#c8a96a;font-weight:700;min-width:20px;">4.</span><span style="color:#999;font-size:14px;">Platnost poukazu: 12 měsíců od zakoupení</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+var selectedAmount = 500;
+
+async function selectAmount(amount) {
+  selectedAmount = amount;
+  document.querySelectorAll('.amount-btn').forEach(btn => {
+    var isSelected = parseInt(btn.dataset.amount) === amount;
+    btn.style.background = isSelected ? 'rgba(200,169,106,0.1)' : '#2a2a2a';
+    btn.style.borderColor = isSelected ? '#c8a96a' : '#333';
+    btn.style.color = isSelected ? '#c8a96a' : '#ccc';
+    btn.style.fontWeight = isSelected ? '700' : '600';
+  });
+  var priceEl = document.getElementById('gc-price-display');
+  if (priceEl && amount > 0) priceEl.textContent = `Celková cena: ${formatPrice(amount)} Kč`;
+}
+
+async function purchaseGiftCard() {
+  var recipientEmail = document.getElementById('gc-recipient-email')?.value?.trim();
+  var buyerEmail = document.getElementById('gc-buyer-email')?.value?.trim();
+  if (!recipientEmail || !buyerEmail) { showToast('⚠️ Vyplňte emaily'); return; }
+  if (!recipientEmail.includes('@') || !buyerEmail.includes('@')) { showToast('⚠️ Neplatný email'); return; }
+  if (!selectedAmount || selectedAmount < 100) { showToast('⚠️ Vyberte hodnotu poukazu'); return; }
+
+  var btn = document.querySelector('[onclick="purchaseGiftCard()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Odesílám...'; }
+
+  try {
+    var code = 'GC-' + Math.random().toString(36).substring(2,10).toUpperCase();
+    var sb = await getSupabase();
+    await sb.from('coupons').insert([{
+      code,
+      discount_type: 'fixed',
+      discount_value: selectedAmount,
+      min_order: 0,
+      max_uses: 1,
+      is_active: true,
+      expires_at: new Date(Date.now() + 365*24*3600*1000).toISOString()
+    }]);
+    showToast(`✓ Poukaz ${code} vytvořen! Odesíláme email na ${recipientEmail}`);
+    if (btn) { btn.disabled = false; btn.textContent = '🎁 Koupit dárkový poukaz'; }
+    // Show confirmation
+    var _gcEl = document.getElementById('gc-check-result'); if(_gcEl) _gcEl.innerHTML = `
+      <div style="padding:14px;background:rgba(79,204,79,0.08);border:1px solid rgba(79,204,79,0.2);border-radius:8px;text-align:center;">
+        <div style="font-size:24px;margin-bottom:6px;">✅</div>
+        <div style="font-weight:700;color:#4f4;margin-bottom:4px;">Poukaz vytvořen!</div>
+        <div style="font-family:monospace;font-size:18px;color:#c8a96a;font-weight:700;margin-bottom:4px;">${code}</div>
+        <div style="color:#777;font-size:13px;">Hodnota: ${formatPrice(selectedAmount)} Kč</div>
+      </div>`;
+  } catch(e) {
+    showToast('Chyba: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '🎁 Koupit dárkový poukaz'; }
+  }
+}
+
+async function checkGiftCard() {
+  var code = document.getElementById('gc-redeem-code')?.value?.trim().toUpperCase();
+  if (!code) { showToast('Zadejte kód poukazu'); return; }
+  var res = document.getElementById('gc-check-result');
+  try {
+    var sb = await getSupabase();
+    var { data: coupon } = await sb.from('coupons').select('*').eq('code', code).single();
+    if (!coupon) {
+      res.innerHTML = '<div style="color:#f44;font-size:13px;margin-top:8px;">❌ Poukaz nenalezen</div>';
+    } else if (!coupon.is_active || coupon.used_count >= (coupon.max_uses||Infinity)) {
+      res.innerHTML = '<div style="color:#fa0;font-size:13px;margin-top:8px;">⚠️ Poukaz byl již použit</div>';
+    } else {
+      res.innerHTML = `<div style="padding:12px;background:rgba(79,204,79,0.08);border:1px solid rgba(79,204,79,0.2);border-radius:6px;margin-top:8px;">
+        <div style="color:#4f4;font-weight:600;margin-bottom:4px;">✅ Platný poukaz</div>
+        <div style="color:#c8a96a;font-size:16px;font-weight:700;">Hodnota: ${formatPrice(coupon.discount_value)} Kč</div>
+        <div style="color:#666;font-size:12px;margin-top:4px;">Použijte kód <strong style="color:#ccc;">${code}</strong> při objednávce</div>
+      </div>`;
+    }
+  } catch(e) { res.innerHTML = `<div style="color:#f44;font-size:13px;margin-top:8px;">Chyba: ${e.message}</div>`; }
+}
+
+window.selectAmount = selectAmount;
+window.purchaseGiftCard = purchaseGiftCard;
+window.checkGiftCard = checkGiftCard;
+</script>

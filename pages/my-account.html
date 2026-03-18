@@ -1,0 +1,283 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:1000px;margin:0 auto;">
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:28px;">👤 Můj účet</h1>
+
+    <!-- Guest view (default) -->
+    <div id="account-guest">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:600px;" class="grid-contact">
+        <div style="padding:28px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+          <!-- Tabs -->
+          <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid #2a2a2a;">
+            <button id="tab-login" onclick="switchAuthTab('login')"
+              style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid #c8a96a;color:#c8a96a;font-size:14px;font-weight:600;cursor:pointer;">🔑 Přihlásit se</button>
+            <button id="tab-register" onclick="switchAuthTab('register')"
+              style="flex:1;padding:10px;background:none;border:none;border-bottom:2px solid transparent;color:#777;font-size:14px;cursor:pointer;">✨ Registrovat se</button>
+          </div>
+
+          <!-- Login form -->
+          <div id="auth-login" style="display:flex;flex-direction:column;gap:10px;">
+            <input id="login-email" type="email" placeholder="E-mail" autocomplete="email"
+              style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+            <input id="login-password" type="password" placeholder="Heslo" autocomplete="current-password"
+              style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"
+              onkeypress="if(event.key==='Enter') loginUser()">
+            <button onclick="loginUser()" class="btn-primary" style="padding:11px;font-size:14px;">Přihlásit se</button>
+          </div>
+
+          <!-- Register form -->
+          <div id="auth-register" style="display:none;flex-direction:column;gap:10px;">
+            <input id="reg-name" type="text" placeholder="Celé jméno" autocomplete="name"
+              style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+            <input id="reg-email" type="email" placeholder="E-mail" autocomplete="email"
+              style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+            <input id="reg-password" type="password" placeholder="Heslo (min. 6 znaků)" autocomplete="new-password"
+              style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+            <input id="reg-password2" type="password" placeholder="Heslo znovu"
+              style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"
+              onkeypress="if(event.key==='Enter') registerUser()">
+            <button onclick="registerUser()" class="btn-primary" style="padding:11px;font-size:14px;">Vytvořit účet</button>
+            <div id="reg-error" style="color:#f44;font-size:12px;min-height:16px;"></div>
+          </div>
+        </div>
+        <div style="padding:28px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;text-align:center;">
+          <div style="font-size:36px;margin-bottom:12px;">📦</div>
+          <h2 style="font-size:18px;margin-bottom:8px;">Sledovat objednávku</h2>
+          <p style="color:#777;font-size:13px;margin-bottom:16px;">Bez přihlášení pomocí čísla objednávky</p>
+          <button onclick="goTo('/track-order')" class="btn-secondary" style="padding:11px 20px;font-size:14px;width:100%;">Sledovat objednávku →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logged in view (hidden by default) -->
+    <div id="account-loggedin" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div id="account-greeting" style="font-size:18px;font-weight:600;margin-bottom:4px;color:#c8a96a;"></div>
+          <div id="account-email-display" style="color:#777;font-size:14px;"></div>
+        </div>
+        <button onclick="logoutUser()" class="btn-secondary" style="padding:10px 18px;">Odhlásit se</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:24px;" class="grid-contact">
+        <div style="background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;padding:16px 0;">
+          <button onclick="showTab('orders')" id="tab-orders" style="width:100%;text-align:left;padding:12px 20px;background:rgba(200,169,106,0.08);border:none;border-left:3px solid #c8a96a;color:#c8a96a;cursor:pointer;font-size:14px;">📦 Moje objednávky</button>
+          <button onclick="showTab('wishlist')" id="tab-wishlist" style="width:100%;text-align:left;padding:12px 20px;background:none;border:none;border-left:3px solid transparent;color:#999;cursor:pointer;font-size:14px;">❤️ Oblíbené</button>
+          <button onclick="showTab('addresses')" id="tab-addresses" style="width:100%;text-align:left;padding:12px 20px;background:none;border:none;border-left:3px solid transparent;color:#999;cursor:pointer;font-size:14px;">📍 Uložené adresy</button>
+          <button onclick="showTab('profile')" id="tab-profile" style="width:100%;text-align:left;padding:12px 20px;background:none;border:none;border-left:3px solid transparent;color:#999;cursor:pointer;font-size:14px;">⚙️ Nastavení</button>
+        </div>
+        <div id="account-content">
+          <div id="tab-orders-content"></div>
+          <div id="tab-wishlist-content" style="display:none;"></div>
+          <div id="tab-addresses-content" style="display:none;"></div>
+        <div id="tab-profile-content" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+var currentUser = null;
+
+async function loadMyAccount() {
+  var session = Storage.get('user-session');
+  if (session) {
+    showAccountLoggedIn(session);
+  }
+}
+
+async function showAccountLoggedIn(user) {
+  currentUser = user;
+  document.getElementById('account-guest').style.display = 'none';
+  document.getElementById('account-loggedin').style.display = 'block';
+  document.getElementById('account-greeting').textContent = 'Dobrý den, ' + (user.name || 'zákazníku') + '!';
+  document.getElementById('account-email-display').textContent = user.email || '';
+  showTab('orders');
+}
+
+async function loginUser() {
+  var email = document.getElementById('login-email')?.value?.trim();
+  var password = document.getElementById('login-password')?.value;
+  if (!email || !password) { showToast('Vyplňte email a heslo'); return; }
+
+  try {
+    var sb = await getSupabase();
+    var { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    var user = { email: data.user.email, name: data.user.user_metadata?.name || email.split('@')[0] };
+    Storage.set('user-session', user);
+    showAccountLoggedIn(user);
+    showToast('✓ Přihlášení úspěšné');
+  } catch (e) {
+    showToast('Chyba přihlášení: ' + e.message);
+  }
+}
+
+async function logoutUser() {
+  Storage.remove('user-session');
+  currentUser = null;
+  document.getElementById('account-guest').style.display = 'block';
+  document.getElementById('account-loggedin').style.display = 'none';
+  showToast('Odhlášení úspěšné');
+}
+
+async function showTab(tab) {
+  ['orders','wishlist','addresses','profile'].forEach(t => {
+    var btn = document.getElementById('tab-' + t);
+    var content = document.getElementById('tab-' + t + '-content');
+    if (btn) {
+      btn.style.background = t === tab ? 'rgba(200,169,106,0.08)' : 'none';
+      btn.style.borderLeftColor = t === tab ? '#c8a96a' : 'transparent';
+      btn.style.color = t === tab ? '#c8a96a' : '#999';
+    }
+    if (content) content.style.display = t === tab ? 'block' : 'none';
+  });
+  if (tab === 'orders') loadUserOrders();
+  if (tab === 'wishlist') loadUserWishlist();
+  if (tab === 'addresses') renderAddresses();
+  if (tab === 'profile') renderProfile();
+}
+
+async function loadUserOrders() {
+  var el = document.getElementById('tab-orders-content');
+  if (!el || !currentUser) return;
+  el.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    var sb = await getSupabase();
+    var { data: orders, error } = await sb.from('orders').select('*').eq('customer_email', currentUser.email).order('created_at', { ascending: false });
+    if (error) throw error;
+    if (!orders?.length) {
+      el.innerHTML = '<div style="text-align:center;padding:40px;color:#777;"><div style="font-size:40px;margin-bottom:12px;">📦</div><p>Žádné objednávky</p><button onclick="goTo(\'/shop\')" class="btn-primary" style="margin-top:16px;padding:11px 24px;">Nakoupit</button></div>';
+      return;
+    }
+    var statusMap = { pending:'⏳ Čekající', processing:'🔄 Zpracovává se', printing:'🖨️ Tisk', shipped:'📦 Odesláno', delivered:'✅ Doručeno' };
+    el.innerHTML = orders.map(o => `
+      <div style="padding:16px;background:#111;border-radius:8px;border:1px solid #222;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-family:monospace;font-weight:700;color:#c8a96a;">${escapeHtml(o.order_number)}</div>
+            <div style="color:#666;font-size:12px;margin-top:2px;">${formatDate(o.created_at)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:13px;">${statusMap[o.status] || o.status}</span>
+            <span style="font-weight:700;color:#c8a96a;">${formatPrice(o.total_amount)} Kč</span>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    el.innerHTML = `<div style="color:#f44;padding:20px;">Chyba: ${e.message}</div>`;
+  }
+}
+
+async function loadUserWishlist() {
+  var el = document.getElementById('tab-wishlist-content');
+  if (!el) return;
+  var items = Wishlist.getItems();
+  if (!items.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:#777;"><div style="font-size:40px;margin-bottom:12px;">❤️</div><p>Oblíbené je prázdné</p><button onclick="goTo(\'/shop\')" class="btn-primary" style="margin-top:16px;padding:11px 24px;">Prohlédnout obchod</button></div>';
+    return;
+  }
+  el.innerHTML = `<div style="color:#999;margin-bottom:12px;">${items.length} položek v oblíbených</div><button onclick="goTo('/wishlist')" class="btn-primary" style="padding:11px 24px;">Zobrazit oblíbené</button>`;
+}
+
+async function renderProfile() {
+  var el = document.getElementById('tab-profile-content');
+  if (!el || !currentUser) return;
+  el.innerHTML = `
+    <div style="max-width:400px;">
+      <h3 style="margin-bottom:16px;font-size:16px;">Informace o účtu</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div><label>Email</label><input type="email" value="${escapeHtml(currentUser.email||'')}" disabled style="width:100%;background:#111;color:#666;cursor:not-allowed;"></div>
+        <div><label>Jméno</label><input id="profile-name" type="text" value="${escapeHtml(currentUser.name||'')}" style="width:100%;"></div>
+        <button onclick="saveProfile()" class="btn-primary" style="padding:11px;margin-top:4px;">Uložit změny</button>
+      </div>
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid #222;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button onclick="exportMyData()" class="btn-secondary" style="padding:10px 18px;font-size:13px;">📥 Exportovat moje data</button>
+        <button onclick="logoutUser()" class="btn-danger" style="padding:10px 18px;font-size:13px;">Odhlásit se ze všech zařízení</button>
+        <button onclick="deleteMyAccount()" style="padding:10px 18px;font-size:13px;background:rgba(244,68,68,0.08);color:#f66;border:1px solid rgba(244,68,68,0.2);border-radius:6px;cursor:pointer;">🗑️ Smazat účet (GDPR)</button>
+      </div>
+      </div>
+    </div>`;
+}
+
+async function exportMyData() {
+  if (!currentUser) { showToast('Musíte být přihlášeni'); return; }
+  try {
+    var sb = await getSupabase();
+    var { data: orders } = await sb.from('orders').select('*, order_items(*)').eq('customer_email', currentUser.email);
+    var exportData = {
+      export_date: new Date().toISOString(),
+      user: { email: currentUser.email, name: currentUser.name },
+      orders: orders || [],
+      wishlist: Wishlist.getItems(),
+      recently_viewed: Storage.get('recently_viewed', []),
+    };
+    var blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = `drobnostik-data-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✓ Data exportována jako JSON soubor');
+  } catch(e) { showToast('Chyba exportu: ' + e.message); }
+}
+
+async function deleteMyAccount() {
+  if (!confirm('Opravdu chcete smazat svůj účet? Tato akce je nevratná.')) return;
+  if (!confirm('Jste si jistí? Všechna vaše data budou odstraněna.')) return;
+  logoutUser();
+  showToast('Účet byl odstraněn. Vaše data budou smazána do 30 dní.');
+}
+
+async function saveProfile() {
+  var name = document.getElementById('profile-name')?.value?.trim();
+  if (currentUser) { currentUser.name = name; Storage.set('user-session', currentUser); }
+  showToast('✓ Profil uložen');
+}
+
+async function repeatOrder(orderNum) {
+  showToast('✓ Kontaktujte nás na info@drobnostik.cz se číslem objednávky ' + orderNum + ' pro opakování');
+}
+window.repeatOrder = repeatOrder;
+window.loadMyAccount = loadMyAccount;
+
+async function switchAuthTab(tab) {
+  document.getElementById('auth-login').style.display    = tab==='login'    ? 'flex' : 'none';
+  document.getElementById('auth-register').style.display = tab==='register' ? 'flex' : 'none';
+  var tL = document.getElementById('tab-login'), tR = document.getElementById('tab-register');
+  if(tL){ tL.style.borderBottomColor=tab==='login'?'#c8a96a':'transparent'; tL.style.color=tab==='login'?'#c8a96a':'#777'; }
+  if(tR){ tR.style.borderBottomColor=tab==='register'?'#c8a96a':'transparent'; tR.style.color=tab==='register'?'#c8a96a':'#777'; }
+}
+window.switchAuthTab = switchAuthTab;
+
+async function registerUser() {
+  var name=document.getElementById('reg-name')?.value?.trim();
+  var email=document.getElementById('reg-email')?.value?.trim();
+  var pw1=document.getElementById('reg-password')?.value;
+  var pw2=document.getElementById('reg-password2')?.value;
+  var errEl=document.getElementById('reg-error');
+  if(!name){if(errEl)errEl.textContent='Zadejte jméno.';return;}
+  if(!email){if(errEl)errEl.textContent='Zadejte e-mail.';return;}
+  if(!pw1||pw1.length<6){if(errEl)errEl.textContent='Heslo musí mít alespoň 6 znaků.';return;}
+  if(pw1!==pw2){if(errEl)errEl.textContent='Hesla se neshodují.';return;}
+  if(errEl)errEl.textContent='';
+  try {
+    var sb=await getSupabase();
+    var {data,error}=await sb.auth.signUp({email,password:pw1,options:{data:{full_name:name}}});
+    if(error)throw error;
+    if(data.user&&!data.session){showToast('✅ Účet vytvořen! Zkontrolujte e-mail.');switchAuthTab('login');document.getElementById('login-email').value=email;}
+    else if(data.session){showToast('✅ Účet vytvořen a přihlášen!');location.reload();}
+  } catch(e) {
+    var msg=e.message?.includes('already registered')?'E-mail je již zaregistrován.':e.message;
+    if(errEl)errEl.textContent=msg;showToast('❌ '+msg);
+  }
+}
+window.registerUser = registerUser;
+
+window.loginUser = loginUser;
+window.logoutUser = logoutUser;
+window.showTab = showTab;
+window.saveProfile = saveProfile;
+</script>

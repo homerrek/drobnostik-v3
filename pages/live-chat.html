@@ -1,0 +1,70 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:700px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;">
+      <a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;">Domů</a>
+      <span style="color:#444;font-size:12px;"> › </span>
+      <span style="color:#999;font-size:13px;">Live Chat</span>
+    </nav>
+
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">💬 Zákaznická podpora</h1>
+    <p style="color:#777;margin-bottom:32px;">Ozveme se vám co nejdříve — průměrná doba odpovědi je <strong style="color:#c8a96a;">2 hodiny</strong> v pracovní době.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:32px;">
+      <a href="mailto:info@drobnostik.cz" style="text-decoration:none;">
+        <div style="padding:24px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;text-align:center;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#2a2a2a'">
+          <div style="font-size:36px;margin-bottom:12px;">📧</div>
+          <div style="font-weight:600;margin-bottom:4px;">E-mail</div>
+          <div style="color:#c8a96a;font-size:14px;">info@drobnostik.cz</div>
+          <div style="color:#666;font-size:12px;margin-top:6px;">Odpověď do 4 hodin</div>
+        </div>
+      </a>
+      <a href="tel:+420777123456" style="text-decoration:none;">
+        <div style="padding:24px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;text-align:center;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#2a2a2a'">
+          <div style="font-size:36px;margin-bottom:12px;">📞</div>
+          <div style="font-weight:600;margin-bottom:4px;">Telefon</div>
+          <div style="color:#c8a96a;font-size:14px;">+420 777 123 456</div>
+          <div style="color:#666;font-size:12px;margin-top:6px;">Po–Pá 9:00–17:00</div>
+        </div>
+      </a>
+      <div onclick="goTo('/support')" style="padding:24px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#2a2a2a'">
+        <div style="font-size:36px;margin-bottom:12px;">🎫</div>
+        <div style="font-weight:600;margin-bottom:4px;">Ticket systém</div>
+        <div style="color:#c8a96a;font-size:14px;">Otevřít ticket →</div>
+        <div style="color:#666;font-size:12px;margin-top:6px;">Evidence a sledování</div>
+      </div>
+    </div>
+
+    <div style="padding:24px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;">
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">📬 Napište nám přímo</h2>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="grid-contact">
+          <div><label style="font-size:13px;color:#999;margin-bottom:4px;display:block;">Jméno *</label>
+            <input id="chat-name" type="text" placeholder="Vaše jméno" style="width:100%;padding:10px 12px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;font-size:14px;"></div>
+          <div><label style="font-size:13px;color:#999;margin-bottom:4px;display:block;">E-mail *</label>
+            <input id="chat-email" type="email" placeholder="vas@email.cz" style="width:100%;padding:10px 12px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;font-size:14px;"></div>
+        </div>
+        <div><label style="font-size:13px;color:#999;margin-bottom:4px;display:block;">Zpráva *</label>
+          <textarea id="chat-msg" rows="4" placeholder="Jak vám můžeme pomoci?" style="width:100%;padding:10px 12px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;font-size:14px;resize:vertical;"></textarea></div>
+        <button onclick="sendChatMsg()" class="btn-primary" style="padding:12px 28px;align-self:flex-start;">Odeslat zprávu</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+async function sendChatMsg() {
+  var name  = document.getElementById('chat-name')?.value?.trim();
+  var email = document.getElementById('chat-email')?.value?.trim();
+  var msg   = document.getElementById('chat-msg')?.value?.trim();
+  if (!name || !email || !msg) { showToast('Vyplňte všechna povinná pole.'); return; }
+  try {
+    var sb = await getSupabase();
+    await sb.from('contact_messages').insert([{ name, email, subject: 'live-chat', message: msg }]);
+    showToast('✅ Zpráva odeslána! Ozveme se do 4 hodin.');
+    document.getElementById('chat-name').value = '';
+    document.getElementById('chat-email').value = '';
+    document.getElementById('chat-msg').value = '';
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+window.sendChatMsg = sendChatMsg;
+</script>

@@ -1,0 +1,38 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:860px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;">
+      <a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;">Domů</a>
+      <span style="color:#444;font-size:12px;"> › </span>
+      <span style="color:#999;font-size:13px;">Ochrana osobních údajů</span>
+    </nav>
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">🔒 Zásady ochrany osobních údajů</h1>
+    <p style="color:#777;font-size:13px;margin-bottom:36px;">Poslední aktualizace: 16. března 2026 | GDPR compliance</p>
+    <div style="display:flex;flex-direction:column;gap:28px;color:#ccc;line-height:1.9;font-size:15px;">
+      <section><h2 style="font-size:20px;font-weight:700;color:#c8a96a;margin-bottom:12px;">1. Správce osobních údajů</h2>
+        <p>Správcem osobních údajů je <strong style="color:#fff;">Drobnostík</strong>, IČO: 123 45 678, Night City District 7, 110 00. Kontakt: info@drobnostik.cz, +420 777 123 456.</p></section>
+      <section><h2 style="font-size:20px;font-weight:700;color:#c8a96a;margin-bottom:12px;">2. Jaké údaje sbíráme</h2>
+        <ul style="margin:8px 0 8px 20px;"><li>Identifikační: jméno, příjmení</li><li>Kontaktní: email, telefon</li><li>Doručovací: ulice, město, PSČ</li><li>Platební: způsob platby (bez čísla karty)</li><li>Technické: IP adresa, cookies, chování na webu</li></ul></section>
+      <section><h2 style="font-size:20px;font-weight:700;color:#c8a96a;margin-bottom:12px;">3. Účel zpracování</h2>
+        <ul style="margin:8px 0 8px 20px;"><li>Vyřízení objednávky a doručení zboží (právní základ: plnění smlouvy)</li><li>Zákaznická podpora a komunikace (oprávněný zájem)</li><li>Newsletter — pouze se souhlasem (souhlas)</li><li>Analytika a zlepšení webu (oprávněný zájem)</li><li>Plnění zákonných povinností (právní základ: zákonná povinnost)</li></ul></section>
+      <section><h2 style="font-size:20px;font-weight:700;color:#c8a96a;margin-bottom:12px;">4. Komu předáváme údaje</h2>
+        <p>Vaše osobní údaje předáváme pouze:</p>
+        <ul style="margin:8px 0 8px 20px;"><li>Přepravním společnostem (Zásilkovna, Česká pošta) — pro doručení</li><li>Supabase Inc. — pro provoz databáze (USA, standardní smluvní doložky EU)</li><li>Orgánům veřejné moci — pouze na základě zákona</li></ul>
+        <p>Vaše údaje neprodáváme ani nepronajímáme třetím stranám za marketingovými účely.</p></section>
+      <section><h2 style="font-size:20px;font-weight:700;color:#c8a96a;margin-bottom:12px;">5. Doba uchovávání</h2>
+        <ul style="margin:8px 0 8px 20px;"><li>Objednávky: 10 let (daňová povinnost)</li><li>Zákaznický účet: po dobu trvání účtu + 3 roky</li><li>Newsletter souhlas: do odvolání souhlasu</li><li>Technické logy: 12 měsíců</li></ul></section>
+      <section><h2 style="font-size:20px;font-weight:700;color:#c8a96a;margin-bottom:12px;">6. Vaše práva (GDPR)</h2>
+        <ul style="margin:8px 0 8px 20px;"><li><strong style="color:#fff;">Přístup</strong> — právo vědět, jaké údaje o vás zpracováváme</li><li><strong style="color:#fff;">Oprava</strong> — právo opravit nepřesné údaje</li><li><strong style="color:#fff;">Výmaz</strong> — právo na smazání ("právo být zapomenut")</li><li><strong style="color:#fff;">Přenositelnost</strong> — právo na export vašich dat</li><li><strong style="color:#fff;">Omezení zpracování</strong> — právo omezit zpracování</li><li><strong style="color:#fff;">Námitka</strong> — právo vznést námitku proti zpracování</li><li><strong style="color:#fff;">Odvolání souhlasu</strong> — kdykoliv, bez negativních důsledků</li></ul>
+        <p>Práva uplatněte na info@drobnostik.cz. Odpovíme do 30 dní. Máte také právo podat stížnost u Úřadu pro ochranu osobních údajů (uoou.cz).</p></section>
+      <section><h2 style="font-size:20px;font-weight:700;color:#c8a96a;margin-bottom:12px;">7. Cookies</h2>
+        <p>Používáme tyto typy cookies:</p>
+        <ul style="margin:8px 0 8px 20px;"><li><strong style="color:#fff;">Nezbytné</strong> — košík, session, přihlášení (nelze odmítnout)</li><li><strong style="color:#fff;">Analytické</strong> — anonymní statistiky návštěvnosti (lze odmítnout)</li><li><strong style="color:#fff;">Preferenční</strong> — tmavý/světlý režim, jazyk (lze odmítnout)</li></ul>
+        <p>Souhlas s cookies lze kdykoli odvolat v zápatí stránky.</p></section>
+      <section><h2 style="font-size:20px;font-weight:700;color:#c8a96a;margin-bottom:12px;">8. Zabezpečení</h2>
+        <p>Veškerá komunikace probíhá šifrovaně přes HTTPS/TLS. Data jsou uložena na zabezpečených serverech Supabase s automatickými zálohami. Přístup k datům mají pouze oprávnění zaměstnanci.</p></section>
+    </div>
+    <div style="margin-top:36px;padding:20px;background:#111;border-radius:10px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <button onclick="goTo('/terms')" class="btn-secondary" style="padding:10px 20px;">📋 Podmínky použití</button>
+      <button onclick="goTo('/contact')" class="btn-secondary" style="padding:10px 20px;">✉️ Uplatnit práva GDPR</button>
+    </div>
+  </div>
+</main>

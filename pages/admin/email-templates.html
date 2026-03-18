@@ -1,0 +1,111 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/email-templates" onclick="event.preventDefault();goTo('/admin/email-templates')" class="active">✉️ Šablony emailů</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:24px;">✉️ Email šablony</h1>
+      <div id="templates-list"><div class="loading-spinner"></div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+var STATIC_TEMPLATES = [
+  { name:'order_confirmation', label:'Potvrzení objednávky', subject:'Potvrzení objednávky {{order_number}} — Drobnostík', variables:['order_number','customer_name','total_amount','shipping_method'] },
+  { name:'order_shipped', label:'Objednávka odeslána', subject:'Vaše objednávka {{order_number}} byla odeslána! 📦', variables:['order_number','customer_name','tracking_number'] },
+  { name:'newsletter_welcome', label:'Uvítací email', subject:'Vítejte v Drobnostík newsletteru! 🎮 Sleva 10%', variables:['email'] },
+  { name:'contact_reply', label:'Odpověď na kontakt', subject:'Re: Vaše zpráva — Drobnostík', variables:['customer_name','ticket_id'] },
+];
+
+async function loadEmailTemplates() {
+  if (typeof checkAdminAuth === 'function' && !checkAdminAuth()) return;
+  var el = document.getElementById('templates-list');
+  if (!el) return;
+
+  var templates = STATIC_TEMPLATES;
+  try {
+    var sb = await getSupabase();
+    var { data } = await sb.from('email_templates').select('*').order('id');
+    if (data && data.length > 0) templates = data.map(t => ({ ...t, label: t.name }));
+  } catch(e) {}
+
+  el.innerHTML = `<div style="display:grid;gap:16px;">
+    ${templates.map(t => `
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:4px;">${escapeHtml(t.label || t.name)}</h3>
+            <div style="font-size:13px;color:#777;">Předmět: ${escapeHtml(t.subject || '')}</div>
+            ${t.variables ? `<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">${(t.variables||[]).map(v => `<span style="font-size:11px;background:rgba(200,169,106,0.12);color:#c8a96a;padding:2px 8px;border-radius:10px;">{{${escapeHtml(v)}}}</span>`).join('')}</div>` : ''}
+          </div>
+          <button onclick="editTemplate('${escapeHtml(t.name)}')" style="background:rgba(200,169,106,0.12);color:#c8a96a;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;">✏️ Upravit</button>
+        </div>
+        ${t.body ? `<div style="background:#111;border-radius:6px;padding:12px;font-size:12px;color:#777;font-family:monospace;max-height:80px;overflow:hidden;line-height:1.6;">${escapeHtml(t.body.slice(0,200))}...</div>` : ''}
+      </div>`).join('')}
+  </div>`;
+}
+
+async function editTemplate(name) {
+  var tpl = null;
+  try {
+    var sb = await getSupabase();
+    var { data } = await sb.from('email_templates').select('*').eq('name', name).single();
+    tpl = data;
+  } catch(e) { tpl = STATIC_TEMPLATES.find(t => t.name === name); }
+  if (!tpl) return;
+
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.onclick = e => { if(e.target===modal) modal.remove(); };
+  modal.innerHTML = `<div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:28px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 style="font-size:17px;font-weight:700;">${escapeHtml(tpl.label || tpl.name)}</h2>
+      <button onclick="this.closest('[style*=position]').remove()" style="background:none;border:none;color:#777;font-size:22px;cursor:pointer;">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div><label>Předmět emailu</label><input id="tpl-subject" type="text" value="${escapeHtml(tpl.subject||'')}" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+      <div><label>Obsah (text/HTML)</label><textarea id="tpl-body" rows="10" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;font-family:monospace;font-size:13px;resize:vertical;">${escapeHtml(tpl.body||'')}</textarea></div>
+      <div style="font-size:12px;color:#555;">Dostupné proměnné: ${(tpl.variables||[]).map(v => `<code>{{${v}}}</code>`).join(', ')}</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button onclick="saveTemplate('${escapeHtml(name)}')" class="btn-primary" style="flex:1;padding:11px;">Uložit</button>
+      <button onclick="this.closest('[style*=position]').remove()" class="btn-secondary" style="padding:11px 16px;">Zrušit</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function saveTemplate(name) {
+  var subject = document.getElementById('tpl-subject')?.value?.trim();
+  var body = document.getElementById('tpl-body')?.value?.trim();
+  try {
+    var sb = await getSupabase();
+    await sb.from('email_templates').update({ subject, body }).eq('name', name);
+    showToast('✓ Šablona uložena');
+    document.querySelector('[style*="position:fixed"]')?.remove();
+    loadEmailTemplates();
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+
+window.loadEmailTemplates = loadEmailTemplates;
+window.editTemplate = editTemplate;
+window.saveTemplate = saveTemplate;
+</script>

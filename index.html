@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drobnostík - Premium 3D Pokéboly</title>
+  <meta name="description" content="Drobnostík — prémiové 3D tisknuté Pokebally z Česka.">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- PAGE PROGRESS -->
+<div id="page-progress" style="position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#c8a96a,#e0c090);z-index:9999;width:0;transition:width 0.1s;pointer-events:none;"></div>
+
+<!-- SKIP LINK -->
+<a href="#app" class="skip-link">Přeskočit na obsah</a>
+
+<!-- HEADER -->
+<header id="header" role="banner">
+  <div class="container" style="max-width:1200px;margin:0 auto;padding:0 40px;display:flex;justify-content:space-between;align-items:center;">
+    <div class="nav-left">
+      <div class="logo" onclick="goTo('/')" style="cursor:pointer;">
+        <img src="/images/logo.png" alt="Drobnostík" style="height:32px;width:auto;">
+        Drobnostík
+      </div>
+      <nav class="nav-menu" id="nav-menu">
+        <a href="/" class="nav-link" onclick="event.preventDefault();goTo('/')">Domů</a>
+        <a href="/shop" class="nav-link" onclick="event.preventDefault();goTo('/shop')">Obchod</a>
+        <a href="/best-sellers" class="nav-link" onclick="event.preventDefault();goTo('/best-sellers')">Bestsellery</a>
+        <a href="/deals" class="nav-link" onclick="event.preventDefault();goTo('/deals')">Akce</a>
+        <a href="/compare" class="nav-link" onclick="event.preventDefault();goTo('/compare')">Srovnání</a>
+        <a href="/about" class="nav-link" onclick="event.preventDefault();goTo('/about')">O nás</a>
+        <a href="/faq" class="nav-link" onclick="event.preventDefault();goTo('/faq')">FAQ</a>
+        <a href="/contact" class="nav-link" onclick="event.preventDefault();goTo('/contact')">Kontakt</a>
+      </nav>
+    </div>
+    <div class="nav-right">
+      <button class="nav-icon-btn" onclick="goTo('/search')" title="Hledat">🔍</button>
+      <button class="nav-icon-btn" onclick="goTo('/wishlist')" title="Oblíbené" style="position:relative;">
+        ❤️<span class="wishlist-count" style="position:absolute;top:-8px;right:-8px;background:#f44;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center;">0</span>
+      </button>
+      <button class="nav-icon-btn btn-cart" onclick="goTo('/cart')" title="Košík" style="position:relative;">
+        🛒<span class="cart-count" style="position:absolute;top:-8px;right:-8px;background:#f44;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center;">0</span>
+      </button>
+      <button class="nav-icon-btn nav-account" onclick="goTo('/my-account')" title="Můj účet">👤</button>
+      <button class="btn-theme nav-icon-btn" onclick="toggleTheme()" title="Přepnout téma">☀️</button>
+      <button class="hamburger" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Menu" style="display:none;background:none;border:none;color:#ccc;font-size:24px;cursor:pointer;padding:4px;">☰</button>
+    </div>
+  </div>
+</header>
+
+<!-- MOBILE MENU -->
+<div id="mobile-overlay" onclick="closeMobileMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:150;"></div>
+<div id="mobile-menu" style="position:fixed;top:0;right:-320px;width:280px;height:100vh;background:#111;z-index:200;padding:24px 0;overflow-y:auto;transition:right 0.35s cubic-bezier(0.4,0,0.2,1);box-shadow:-4px 0 24px rgba(0,0,0,0.5);">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:0 20px 20px;border-bottom:1px solid #222;">
+    <span style="color:#c8a96a;font-weight:700;font-size:16px;">Drobnostík</span>
+    <button onclick="closeMobileMenu()" style="background:none;border:none;color:#999;font-size:22px;cursor:pointer;">✕</button>
+  </div>
+  <nav style="padding:12px 0;">
+    <a href="/" onclick="event.preventDefault();goTo('/');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">🏠 Domů</a>
+    <a href="/shop" onclick="event.preventDefault();goTo('/shop');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">🛍️ Obchod</a>
+    <a href="/best-sellers" onclick="event.preventDefault();goTo('/best-sellers');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">⭐ Bestsellery</a>
+    <a href="/deals" onclick="event.preventDefault();goTo('/deals');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">🔥 Akce</a>
+    <a href="/compare" onclick="event.preventDefault();goTo('/compare');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">⚖️ Srovnání</a>
+    <a href="/search" onclick="event.preventDefault();goTo('/search');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">🔍 Hledat</a>
+    <a href="/wishlist" onclick="event.preventDefault();goTo('/wishlist');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">❤️ Oblíbené</a>
+    <a href="/cart" onclick="event.preventDefault();goTo('/cart');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">🛒 Košík</a>
+    <a href="/track-order" onclick="event.preventDefault();goTo('/track-order');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">📦 Sledovat objednávku</a>
+    <a href="/about" onclick="event.preventDefault();goTo('/about');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">ℹ️ O nás</a>
+    <a href="/blog" onclick="event.preventDefault();goTo('/blog');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">📝 Blog</a>
+    <a href="/forum" onclick="event.preventDefault();goTo('/forum');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">💬 Komunita</a>
+    <a href="/faq" onclick="event.preventDefault();goTo('/faq');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">❓ FAQ</a>
+    <a href="/contact" onclick="event.preventDefault();goTo('/contact');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">✉️ Kontakt</a>
+    <a href="/my-account" onclick="event.preventDefault();goTo('/my-account');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">👤 Můj účet</a>
+    <a href="/loyalty" onclick="event.preventDefault();goTo('/loyalty');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">⭐ Věrnostní program</a>
+    <a href="/achievements" onclick="event.preventDefault();goTo('/achievements');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">🏅 Achievementy</a>
+    <a href="/gift-card" onclick="event.preventDefault();goTo('/gift-card');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">🎁 Dárkové poukazy</a>
+    <a href="/affiliate" onclick="event.preventDefault();goTo('/affiliate');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">🤝 Affiliate program</a>
+    <a href="/b2b" onclick="event.preventDefault();goTo('/b2b');closeMobileMenu();" style="display:block;padding:14px 24px;color:#ccc;text-decoration:none;border-bottom:1px solid #1a1a1a;font-size:15px;">🏢 B2B velkoobchod</a>
+    <div style="border-top:1px solid #333;margin:8px 0;"></div>
+    <a href="/admin" onclick="event.preventDefault();goTo('/admin');closeMobileMenu();" style="display:block;padding:14px 24px;color:#c8a96a;text-decoration:none;font-size:15px;">🔧 Admin</a>
+  </nav>
+</div>
+
+<!-- MAIN CONTENT -->
+<main id="app" role="main">
+  <div style="display:flex;justify-content:center;padding:80px 20px;">
+    <div class="loading-spinner"></div>
+  </div>
+</main>
+
+<!-- SCROLL TO TOP -->
+<button id="scroll-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Nahoru" style="position:fixed;bottom:100px;right:30px;width:44px;height:44px;border-radius:50%;background:#c8a96a;color:#000;border:none;font-size:18px;cursor:pointer;box-shadow:0 4px 12px rgba(200,169,106,0.3);z-index:999;display:none;align-items:center;justify-content:center;transition:all 0.3s;">↑</button>
+
+<!-- COOKIE BANNER -->
+<div id="cookie-banner" style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#1a1a1a,#222);border-top:1px solid rgba(200,169,106,0.2);padding:16px 24px;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;transform:translateY(100%);transition:transform 0.4s ease;">
+  <p style="color:#ccc;font-size:14px;margin:0;flex:1;min-width:200px;">🍪 Tento web používá cookies pro zlepšení vašeho zážitku. <a href="/privacy" onclick="event.preventDefault();goTo('/privacy')" style="color:#c8a96a;">Více informací</a></p>
+  <div style="display:flex;gap:8px;flex-shrink:0;">
+    <button onclick="acceptCookies('essential')" style="padding:8px 16px;background:transparent;border:1px solid #444;color:#ccc;border-radius:4px;cursor:pointer;font-size:13px;">Pouze nutné</button>
+    <button onclick="acceptCookies('all')" style="padding:8px 16px;background:#c8a96a;border:none;color:#000;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;">Přijmout vše</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer id="footer" role="contentinfo">
+  <div style="max-width:1200px;margin:0 auto;padding:0 40px;">
+    <div class="footer-grid" style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <img src="/images/logo.png" alt="Drobnostík" style="height:28px;width:auto;">
+          <span style="color:#c8a96a;font-size:18px;font-weight:700;">Drobnostík</span>
+        </div>
+        <p style="color:#777;font-size:14px;line-height:1.7;margin-bottom:16px;">Precizní 3D tisk. Ikonický design. Každý kus vzniká z kvalitních materiálů a moderní technologie.</p>
+        <div style="display:flex;gap:12px;">
+          <a href="#" style="color:#777;font-size:20px;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">📘</a>
+          <a href="#" style="color:#777;font-size:20px;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">📷</a>
+          <a href="#" style="color:#777;font-size:20px;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">▶️</a>
+          <a href="#" style="color:#777;font-size:20px;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🎵</a>
+        </div>
+      </div>
+      <div>
+        <h4 style="color:#c8a96a;font-size:14px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Obchod</h4>
+        <ul style="list-style:none;padding:0;margin:0;">
+          <li style="margin-bottom:10px;"><a href="/shop" onclick="event.preventDefault();goTo('/shop')" style="color:#777;text-decoration:none;font-size:14px;">Všechny produkty</a></li>
+          <li style="margin-bottom:10px;"><a href="/best-sellers" onclick="event.preventDefault();goTo('/best-sellers')" style="color:#777;text-decoration:none;font-size:14px;">Bestsellery</a></li>
+          <li style="margin-bottom:10px;"><a href="/deals" onclick="event.preventDefault();goTo('/deals')" style="color:#777;text-decoration:none;font-size:14px;">Akce &amp; slevy</a></li>
+          <li style="margin-bottom:10px;"><a href="/compare" onclick="event.preventDefault();goTo('/compare')" style="color:#777;text-decoration:none;font-size:14px;">Srovnání produktů</a></li>
+          <li style="margin-bottom:10px;"><a href="/gift-card" onclick="event.preventDefault();goTo('/gift-card')" style="color:#777;text-decoration:none;font-size:14px;">Dárkové poukazy</a></li>
+          <li style="margin-bottom:10px;"><a href="/b2b" onclick="event.preventDefault();goTo('/b2b')" style="color:#777;text-decoration:none;font-size:14px;">B2B velkoobchod</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:#c8a96a;font-size:14px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Zákaznická podpora</h4>
+        <ul style="list-style:none;padding:0;margin:0;">
+          <li style="margin-bottom:10px;"><a href="/faq" onclick="event.preventDefault();goTo('/faq')" style="color:#777;text-decoration:none;font-size:14px;">FAQ</a></li>
+          <li style="margin-bottom:10px;"><a href="/contact" onclick="event.preventDefault();goTo('/contact')" style="color:#777;text-decoration:none;font-size:14px;">Kontakt</a></li>
+          <li style="margin-bottom:10px;"><a href="/support" onclick="event.preventDefault();goTo('/support')" style="color:#777;text-decoration:none;font-size:14px;">Zákaznická podpora</a></li>
+          <li style="margin-bottom:10px;"><a href="/track-order" onclick="event.preventDefault();goTo('/track-order')" style="color:#777;text-decoration:none;font-size:14px;">Sledovat objednávku</a></li>
+          <li style="margin-bottom:10px;"><a href="/reviews" onclick="event.preventDefault();goTo('/reviews')" style="color:#777;text-decoration:none;font-size:14px;">Recenze</a></li>
+          <li style="margin-bottom:10px;"><a href="/help-center" onclick="event.preventDefault();goTo('/help-center')" style="color:#777;text-decoration:none;font-size:14px;">Centrum nápovědy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:#c8a96a;font-size:14px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Komunita &amp; Info</h4>
+        <ul style="list-style:none;padding:0;margin:0;">
+          <li style="margin-bottom:10px;"><a href="/blog" onclick="event.preventDefault();goTo('/blog')" style="color:#777;text-decoration:none;font-size:14px;">Blog</a></li>
+          <li style="margin-bottom:10px;"><a href="/forum" onclick="event.preventDefault();goTo('/forum')" style="color:#777;text-decoration:none;font-size:14px;">Komunita &amp; fórum</a></li>
+          <li style="margin-bottom:10px;"><a href="/loyalty" onclick="event.preventDefault();goTo('/loyalty')" style="color:#777;text-decoration:none;font-size:14px;">Věrnostní program</a></li>
+          <li style="margin-bottom:10px;"><a href="/achievements" onclick="event.preventDefault();goTo('/achievements')" style="color:#777;text-decoration:none;font-size:14px;">Achievementy</a></li>
+          <li style="margin-bottom:10px;"><a href="/affiliate" onclick="event.preventDefault();goTo('/affiliate')" style="color:#777;text-decoration:none;font-size:14px;">Affiliate program</a></li>
+          <li style="margin-bottom:10px;"><a href="/about" onclick="event.preventDefault();goTo('/about')" style="color:#777;text-decoration:none;font-size:14px;">O nás</a></li>
+          <li style="margin-bottom:10px;"><a href="/privacy" onclick="event.preventDefault();goTo('/privacy')" style="color:#777;text-decoration:none;font-size:14px;">Ochrana osobních údajů</a></li>
+          <li style="margin-bottom:10px;"><a href="/terms" onclick="event.preventDefault();goTo('/terms')" style="color:#777;text-decoration:none;font-size:14px;">Podmínky použití</a></li>
+          <li style="margin-bottom:10px;"><a href="/returns" onclick="event.preventDefault();goTo('/returns')" style="color:#777;text-decoration:none;font-size:14px;">Vrácení zboží</a></li>
+        </ul>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(200,169,106,0.1);padding:24px 0 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <span style="color:#555;font-size:13px;">© 2026 Drobnostík. Všechna práva vyhrazena. Vyrobeno s ❤️</span>
+      <div style="display:flex;gap:16px;">
+        <a href="#" style="color:#555;font-size:13px;text-decoration:none;">📘 Facebook</a>
+        <a href="#" style="color:#555;font-size:13px;text-decoration:none;">📷 Instagram</a>
+        <a href="#" style="color:#555;font-size:13px;text-decoration:none;">▶️ YouTube</a>
+        <a href="#" style="color:#555;font-size:13px;text-decoration:none;">🎵 TikTok</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Floating Chat Button -->
+<button class="chat-fab" onclick="goTo('/live-chat')" title="Live chat" style="position:fixed;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;background:#c8a96a;color:#000;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(200,169,106,0.3);z-index:998;transition:all 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">💬</button>
+
+<!-- SCRIPTS — pořadí je důležité, supabase musí být první -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/config/supabase-config.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/home-init.js"></script>
+<script src="/js/shop.js"></script>
+<script src="/js/product.js"></script>
+<script src="/js/admin.js"></script>
+<script src="/js/checkout.js"></script>
+<script src="/js/search.js"></script>
+<script src="/js/widgets.js"></script>
+<script src="/js/features.js"></script>
+<script src="/js/router.js"></script>
+
+<script>
+// ─── Mobile menu ─────────────────────────────────────────────────
+function toggleMobileMenu() {
+  var menu = document.getElementById('mobile-menu');
+  var overlay = document.getElementById('mobile-overlay');
+  var isOpen = menu.style.right === '0px';
+  menu.style.right = isOpen ? '-320px' : '0px';
+  overlay.style.display = isOpen ? 'none' : 'block';
+}
+function closeMobileMenu() {
+  var menu = document.getElementById('mobile-menu');
+  var overlay = document.getElementById('mobile-overlay');
+  menu.style.right = '-320px';
+  overlay.style.display = 'none';
+}
+window.toggleMobileMenu = toggleMobileMenu;
+window.closeMobileMenu = closeMobileMenu;
+
+// ─── Progress bar ─────────────────────────────────────────────────
+function progressStart() {
+  var bar = document.getElementById('page-progress');
+  if (bar) { bar.style.width = '30%'; bar.style.transition = 'width 0.3s'; }
+}
+function progressDone() {
+  var bar = document.getElementById('page-progress');
+  if (bar) {
+    bar.style.width = '100%';
+    setTimeout(function() { bar.style.width = '0'; bar.style.transition = 'none'; }, 400);
+  }
+}
+window.progressStart = progressStart;
+window.progressDone = progressDone;
+
+// ─── Scroll to top visibility ─────────────────────────────────────
+window.addEventListener('scroll', function() {
+  var btn = document.getElementById('scroll-to-top');
+  if (btn) btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+});
+
+// ─── Hamburger on resize ──────────────────────────────────────────
+function updateHamburger() {
+  var hamburger = document.getElementById('hamburger-btn');
+  var navMenu = document.getElementById('nav-menu');
+  if (!hamburger) return;
+  if (window.innerWidth <= 768) {
+    hamburger.style.display = 'flex';
+    if (navMenu) navMenu.style.display = 'none';
+  } else {
+    hamburger.style.display = 'none';
+    if (navMenu) navMenu.style.display = 'flex';
+    closeMobileMenu();
+  }
+}
+window.addEventListener('resize', updateHamburger);
+document.addEventListener('DOMContentLoaded', updateHamburger);
+</script>
+</body>
+</html>

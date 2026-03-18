@@ -1,0 +1,100 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:1100px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Blog</span></nav>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:32px;font-weight:700;margin-bottom:6px;">📝 Blog</h1>
+        <p style="color:#777;font-size:14px;">Novinky, tipy a příběhy z dílny Drobnostík</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <select id="blog-category-filter" onchange="loadBlog()" style="padding:9px 14px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;font-size:13px;">
+          <option value="">Všechny kategorie</option>
+          <option value="novinky">Novinky</option>
+          <option value="tipy">Tipy & triky</option>
+          <option value="za-kulisami">Za kulisami</option>
+          <option value="komunita">Komunita</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Featured post -->
+    <div id="blog-featured" style="margin-bottom:36px;"></div>
+
+    <!-- Post grid -->
+    <div id="blog-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="blog-pagination" style="display:flex;justify-content:center;gap:8px;margin-top:36px;"></div>
+  </div>
+</main>
+
+<script>
+var STATIC_POSTS = [
+  { id:1, slug:'jak-tiskneme-pokeboly', title:'Jak tiskneme Pokebally — celý proces', excerpt:'Přinášíme vám nahlédnutí do naší dílny. Od digitálního modelu přes 3D tisk až po finální produkt — takto vzniká každý Pokeball.', category:'za-kulisami', author:'Tým Drobnostík', date:'2026-03-10', reading_time:5, image:'/images/about-process-printing.jpg', featured:true },
+  { id:2, slug:'pece-o-pla-vyrobky', title:'Jak pečovat o PLA+ výrobky', excerpt:'PLA+ je skvělý materiál, ale vyžaduje trochu péče. Poradíme vám jak uchovat váš Pokeball v perfektním stavu po roky.', category:'tipy', author:'Tým Drobnostík', date:'2026-03-05', reading_time:3, image:'/images/about-packaging.jpg', featured:false },
+  { id:3, slug:'nova-shadow-edice', title:'Nová Shadow Edition — limitovaná kolekce', excerpt:'S hrdostí představujeme Shadow Edition — ultramatnou limitovanou edici v čisté černé s texturou, která musí být vidět.', category:'novinky', author:'Tým Drobnostík', date:'2026-02-28', reading_time:2, image:'/images/blog-workshop-tools.jpg', featured:false },
+  { id:4, slug:'3d-tisk-materialy', title:'Průvodce 3D tiskovými materiály', excerpt:'PLA, PLA+, PETG, ABS — jaký je rozdíl? Proč používáme PLA+ a co to znamená pro kvalitu vašeho Pokeballu.', category:'tipy', author:'Tým Drobnostík', date:'2026-02-20', reading_time:7, image:'/images/pokebowl-lifestyle-desk.jpg', featured:false },
+  { id:5, slug:'zakaznici-o-nas', title:'Co říkají naši zákazníci', excerpt:'Sdílíme příběhy a fotky od zákazníků, kteří nás inspirují každý den. Jak Pokebally vypadají v reálných domovech?', category:'komunita', author:'Tým Drobnostík', date:'2026-02-15', reading_time:4, image:'/images/about-quality-check.jpg', featured:false },
+  { id:6, slug:'design-procesu', title:'Od nápadu k produktu — design proces', excerpt:'Jak navrhujeme nové modely? Ukázka celého procesu od prvního náčrtu přes CAD model až po hotový výrobek.', category:'za-kulisami', author:'Tým Drobnostík', date:'2026-02-08', reading_time:6, image:'/images/about-story.jpg', featured:false },
+];
+
+var currentPage = 1;
+var postsPerPage = 6;
+
+async function loadBlog() {
+  var category = document.getElementById('blog-category-filter')?.value || '';
+  var posts = STATIC_POSTS;
+
+  // Try loading from DB
+  try {
+    var sb = await getSupabase();
+    var { data } = await sb.from('blog_posts').select('*').eq('status','published').order('published_at',{ascending:false});
+    if (data && data.length > 0) posts = data;
+  } catch(e) {}
+
+  var filtered = category ? posts.filter(p => p.category === category) : posts;
+
+  // Featured
+  var featured = filtered.find(p => p.featured);
+  var featuredEl = document.getElementById('blog-featured');
+  if (featured && featuredEl) {
+    featuredEl.innerHTML = `
+      <div onclick="goTo('/blog/post?id=${featured.id}&slug=${featured.slug}')" style="cursor:pointer;background:#1a1a1a;border:1px solid rgba(200,169,106,0.2);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;min-height:280px;" class="grid-product" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='rgba(200,169,106,0.2)'">
+        <img src="${featured.image || '/images/about-story.jpg'}" style="width:100%;height:100%;object-fit:cover;" alt="${escapeHtml(featured.title)}" onerror="this.src='/images/pokebowl-lifestyle-desk.jpg'">
+        <div style="padding:28px;display:flex;flex-direction:column;justify-content:center;">
+          <div style="font-size:11px;color:#c8a96a;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">✨ Doporučený článek · ${escapeHtml(featured.category)}</div>
+          <h2 style="font-size:22px;font-weight:700;margin-bottom:12px;line-height:1.3;">${escapeHtml(featured.title)}</h2>
+          <p style="color:#999;font-size:14px;line-height:1.7;margin-bottom:16px;">${escapeHtml(featured.excerpt)}</p>
+          <div style="display:flex;align-items:center;gap:12px;font-size:12px;color:#555;">
+            <span>✍️ ${escapeHtml(featured.author)}</span>
+            <span>📅 ${formatDate(featured.date || featured.published_at)}</span>
+            <span>⏱️ ${featured.reading_time} min čtení</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Grid (non-featured)
+  var regular = filtered.filter(p => !p.featured);
+  var grid = document.getElementById('blog-grid');
+  if (!grid) return;
+
+  grid.innerHTML = regular.length ? regular.map(p => `
+    <div onclick="goTo('/blog/post?id=${p.id}&slug=${p.slug}')" style="cursor:pointer;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;overflow:hidden;transition:all 0.2s;" onmouseover="this.style.borderColor='#c8a96a';this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='#2a2a2a';this.style.transform='translateY(0)'">
+      <img src="${p.image || '/images/pokebowl-lifestyle-desk.jpg'}" style="width:100%;height:180px;object-fit:cover;" alt="${escapeHtml(p.title)}" onerror="this.src='/images/pokebowl-lifestyle-desk.jpg'">
+      <div style="padding:18px;">
+        <div style="font-size:11px;color:#c8a96a;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">${escapeHtml(p.category)}</div>
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.4;">${escapeHtml(p.title)}</h3>
+        <p style="color:#999;font-size:13px;line-height:1.6;margin-bottom:12px;">${escapeHtml(p.excerpt?.slice(0,100))}...</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#555;">
+          <span>📅 ${formatDate(p.date || p.published_at)}</span>
+          <span>⏱️ ${p.reading_time} min</span>
+        </div>
+      </div>
+    </div>`).join('') : '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#777;">Žádné příspěvky</div>';
+}
+
+window.loadBlog = loadBlog;
+</script>

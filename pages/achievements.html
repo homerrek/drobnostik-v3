@@ -1,0 +1,88 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:900px;margin:0 auto;">
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">🏅 Achievementy</h1>
+    <p style="color:#777;margin-bottom:28px;">Sbírej achievementy, získávej body a postupuj v žebříčku!</p>
+
+    <div id="ach-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:32px;"></div>
+    <div id="ach-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;"></div>
+
+    <div style="margin-top:32px;padding:24px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+      <h2 style="font-size:18px;font-weight:700;margin-bottom:14px;">🔗 Váš referral kód</h2>
+      <p style="color:#777;font-size:14px;margin-bottom:14px;">Pozvěte přátele a získejte 50 bodů za každého kdo nakoupí!</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input id="referral-display" readonly type="text"
+          style="flex:1;padding:11px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#c8a96a;font-family:monospace;font-weight:700;font-size:15px;" aria-label="Váš referral kód">
+        <button onclick="copyReferral()" class="btn-primary" style="padding:11px 18px;">Kopírovat</button>
+        <button onclick="shareReferral()" class="btn-secondary" style="padding:11px 16px;">Sdílet</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+function loadAchievements() {
+  var allAchs = typeof Achievements !== 'undefined' ? Achievements.list : {};
+  var unlocked = typeof Achievements !== 'undefined' ? Achievements.get() : [];
+  var points = parseInt(localStorage.getItem('loyalty-points') || '0');
+  var totalPossible = Object.values(allAchs).reduce((s, a) => s + a.points, 0);
+
+  var summaryEl = document.getElementById('ach-summary');
+  if (summaryEl) {
+    summaryEl.innerHTML = `
+      <div style="padding:18px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:28px;font-weight:700;color:#c8a96a;">${unlocked.length}</div>
+        <div style="color:#666;font-size:12px;margin-top:4px;">Odemčeno</div>
+      </div>
+      <div style="padding:18px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:28px;font-weight:700;">${Object.keys(allAchs).length}</div>
+        <div style="color:#666;font-size:12px;margin-top:4px;">Celkem achievementů</div>
+      </div>
+      <div style="padding:18px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:28px;font-weight:700;color:#4f4;">${points}</div>
+        <div style="color:#666;font-size:12px;margin-top:4px;">Celkem bodů</div>
+      </div>
+      <div style="padding:18px;background:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;text-align:center;">
+        <div style="font-size:28px;font-weight:700;color:#fa0;">${Math.round(unlocked.length/Math.max(Object.keys(allAchs).length,1)*100)}%</div>
+        <div style="color:#666;font-size:12px;margin-top:4px;">Dokončení</div>
+      </div>`;
+  }
+
+  var listEl = document.getElementById('ach-list');
+  if (listEl) {
+    listEl.innerHTML = Object.entries(allAchs).map(([id, ach]) => {
+      var isUnlocked = unlocked.includes(id);
+      return `
+        <div style="padding:18px;background:#1a1a1a;border-radius:8px;border:1px solid ${isUnlocked ? 'rgba(200,169,106,0.3)' : '#2a2a2a'};opacity:${isUnlocked ? '1' : '0.5'};display:flex;gap:14px;align-items:center;">
+          <div style="font-size:28px;">${isUnlocked ? '🏅' : '🔒'}</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:14px;color:${isUnlocked ? '#c8a96a' : '#ccc'};">${escapeHtml(ach.label)}</div>
+            <div style="font-size:12px;color:#666;margin-top:3px;">${escapeHtml(ach.desc)}</div>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:${isUnlocked ? '#4f4' : '#555'};">+${ach.points} bodů</div>
+        </div>`;
+    }).join('');
+  }
+
+  // Referral code
+  var refDisplay = document.getElementById('referral-display');
+  if (refDisplay && typeof getMyReferralCode !== 'undefined') {
+    refDisplay.value = getMyReferralCode();
+  }
+}
+
+async function copyReferral() {
+  var code = document.getElementById('referral-display')?.value;
+  navigator.clipboard?.writeText(`Nakupuj na Drobnostík.cz s mým kódem ${code} a získej slevu! 🎮`);
+  showToast('✓ Referral kód zkopírován');
+}
+async function shareReferral() {
+  var code = document.getElementById('referral-display')?.value;
+  if (navigator.share) {
+    await navigator.share({ title:'Drobnostík 🎮', text:`Nakupuj na Drobnostík.cz s mým referral kódem ${code} a získej slevu!`, url:'https://drobnostik.cz' });
+  } else { copyReferral(); }
+}
+
+window.loadAchievements = loadAchievements;
+window.copyReferral = copyReferral;
+window.shareReferral = shareReferral;
+</script>

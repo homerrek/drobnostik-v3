@@ -1,0 +1,156 @@
+<main>
+  <!-- Hero Section -->
+  <section style="padding: 80px 40px; background: linear-gradient(135deg, rgba(10,10,10,0.97) 0%, rgba(26,26,26,0.95) 100%), url('/images/pokebowl-hero-detail.jpg') center/cover no-repeat; position:relative;">
+    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;" class="grid-product">
+      <div>
+        <div style="font-size:12px;color:#c8a96a;text-transform:uppercase;letter-spacing:3px;margin-bottom:20px;">Premium 3D tisk · Česká republika</div>
+        <h1 style="font-size:clamp(36px,5vw,64px);font-weight:700;margin:0 0 20px 0;line-height:1.1;">
+          Pokebally<br><span class="gradient-text">vyrobené s láskou</span>
+        </h1>
+        <p style="font-size:16px;color:#999;margin:0 0 32px 0;line-height:1.8;max-width:480px;">
+          Precizní 3D tisk. Ikonický design. Každý kus vzniká z kvalitních materiálů a moderní technologie. Sběratelské kousky, které vypadají přesně tak dobře, jak by měly.
+        </p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button onclick="goTo('/shop')" class="btn-primary" style="padding:14px 28px;font-size:15px;">Prohlédnout obchod →</button>
+          <button onclick="goTo('/about')" class="btn-secondary" style="padding:14px 28px;font-size:15px;">Více o nás</button>
+        </div>
+        <div style="display:flex;gap:24px;margin-top:32px;flex-wrap:wrap;">
+          <div style="font-size:13px;color:#777;display:flex;align-items:center;gap:6px;">⚡ Výroba 3-5 dní</div>
+          <div style="font-size:13px;color:#777;display:flex;align-items:center;gap:6px;">🎨 3 barvy</div>
+          <div style="font-size:13px;color:#777;display:flex;align-items:center;gap:6px;">📦 Doručení po CZ</div>
+        </div>
+      </div>
+
+      <div style="position:relative;">
+        <div style="aspect-ratio:1;background:linear-gradient(135deg,#1a1a1a,#2a2a2a);border-radius:12px;overflow:hidden;position:relative;border:1px solid rgba(200,169,106,0.1);">
+          <img id="rotating-image" src="/images/products/pokebowl-black-front.jpg"
+            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity 0.2s;"
+            alt="Pokéball">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
+          <button id="btn-front" onclick="homeSetView('front')" style="padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:rgba(200,169,106,0.9);color:#000;">Přední</button>
+          <button id="btn-back" onclick="homeSetView('back')" style="padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:rgba(0,0,0,0.5);color:#ccc;">Zadní</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;justify-content:center;">
+          <div id="indicator-0" onclick="homeShowImage(0)" style="width:10px;height:10px;border-radius:50%;background:#c8a96a;cursor:pointer;" title="Černá přední"></div>
+          <div id="indicator-1" onclick="homeShowImage(1)" style="width:10px;height:10px;border-radius:50%;background:#333;cursor:pointer;" title="Černá zadní"></div>
+          <div id="indicator-2" onclick="homeShowImage(2)" style="width:10px;height:10px;border-radius:50%;background:#333;cursor:pointer;" title="Šedá přední"></div>
+          <div id="indicator-3" onclick="homeShowImage(3)" style="width:10px;height:10px;border-radius:50%;background:#333;cursor:pointer;" title="Šedá zadní"></div>
+          <div id="indicator-4" onclick="homeShowImage(4)" style="width:10px;height:10px;border-radius:50%;background:#333;cursor:pointer;" title="Bílá přední"></div>
+          <div id="indicator-5" onclick="homeShowImage(5)" style="width:10px;height:10px;border-radius:50%;background:#333;cursor:pointer;" title="Bílá zadní"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Full-width hero banner with overlay -->
+  <section style="width:100%;overflow:hidden;position:relative;max-height:360px;">
+    <img src="/images/home-collection.jpg" alt="Kolekce pokeballů Drobnostík" style="width:100%;height:360px;object-fit:cover;object-position:center 30%;display:block;filter:brightness(0.7);">
+    <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.05) 100%);display:flex;align-items:center;padding:0 60px;">
+      <div>
+        <img src="/images/logo.png" alt="Drobnostík logo" style="height:64px;width:auto;margin-bottom:16px;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.6));">
+        <div style="font-size:clamp(22px,3vw,34px);font-weight:700;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,0.5);line-height:1.3;">Prémiové 3D tisknuté<br><span style="color:#c8a96a;">Pokebally z Česka</span></div>
+        <div style="margin-top:16px;display:flex;gap:10px;">
+          <button onclick="goTo('/shop')" class="btn-primary" style="padding:12px 24px;">Prohlédnout →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section style="padding:48px 40px;background:#0a0a0a;border-top:1px solid rgba(200,169,106,0.06);border-bottom:1px solid rgba(200,169,106,0.06);">
+    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;">
+      <div style="text-align:center;">
+        <div style="font-size:36px;font-weight:700;color:#c8a96a;margin-bottom:6px;">1 000+</div>
+        <div style="color:#666;font-size:14px;">Spokojených zákazníků</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:36px;font-weight:700;color:#c8a96a;margin-bottom:6px;">5 000+</div>
+        <div style="color:#666;font-size:14px;">Vyrobených kusů</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:36px;font-weight:700;color:#c8a96a;margin-bottom:6px;">4,9★</div>
+        <div style="color:#666;font-size:14px;">Průměrné hodnocení</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:36px;font-weight:700;color:#c8a96a;margin-bottom:6px;">5 let</div>
+        <div style="color:#666;font-size:14px;">Zkušeností v 3D tisku</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section style="padding:60px 40px;background:#0f0f0f;">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:12px;">
+        <h2 style="font-size:28px;font-weight:700;">Doporučené produkty</h2>
+        <button onclick="goTo('/shop')" class="btn-secondary" style="padding:10px 20px;">Všechny produkty →</button>
+      </div>
+      <div id="featured-products" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features / USP -->
+  <section style="padding:60px 40px;background:#0a0a0a;">
+    <div style="max-width:1200px;margin:0 auto;">
+      <h2 style="font-size:28px;font-weight:700;text-align:center;margin-bottom:40px;">Proč Drobnostík?</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;">
+        <div class="card" style="text-align:center;">
+          <div style="font-size:36px;margin-bottom:12px;">🖨️</div>
+          <h3 style="margin-bottom:8px;font-size:16px;">Prémiový 3D tisk</h3>
+          <p style="color:#777;font-size:14px;">Každý kus tisknut na profesionálních FDM tiskárnách z kvalitního PLA filamentu.</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div style="font-size:36px;margin-bottom:12px;">🎨</div>
+          <h3 style="margin-bottom:8px;font-size:16px;">3 varianty barev</h3>
+          <p style="color:#777;font-size:14px;">Černá, bílá a šedá — vyberte si barvu, která ladí s vaším stylem.</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div style="font-size:36px;margin-bottom:12px;">📐</div>
+          <h3 style="margin-bottom:8px;font-size:16px;">3 velikosti</h3>
+          <p style="color:#777;font-size:14px;">Small, Standard a Maxi — vhodné jako dárek, dekorace i praktická miska.</p>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div style="font-size:36px;margin-bottom:12px;">📦</div>
+          <h3 style="margin-bottom:8px;font-size:16px;">Rychlé doručení</h3>
+          <p style="color:#777;font-size:14px;">Standardní zásilka 3-5 dní, expres 1-2 dny. Osobní odběr v Night City zdarma.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter -->
+  <section style="padding:60px 40px;background:linear-gradient(135deg,#111,#1a1a1a);">
+    <div style="max-width:560px;margin:0 auto;text-align:center;">
+      <div style="font-size:32px;margin-bottom:16px;">📬</div>
+      <h2 style="font-size:26px;font-weight:700;margin-bottom:12px;">Sleva 10% na první nákup</h2>
+      <p style="color:#777;margin-bottom:24px;font-size:15px;">Přihlaste se k newsletteru a dostanete kód okamžitě.</p>
+      <div style="display:flex;gap:8px;max-width:440px;margin:0 auto;">
+        <input id="newsletter-email" type="email" placeholder="vas@email.cz"
+          style="flex:1;padding:12px 16px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:white;font-size:14px;"
+          onkeypress="if(event.key==='Enter') subscribeNewsletter()">
+        <button onclick="subscribeNewsletter()" class="btn-primary" style="padding:12px 20px;white-space:nowrap;">Přihlásit</button>
+      </div>
+      <p style="color:#555;font-size:12px;margin-top:12px;">Bez spamu. Odhlášení kdykoliv.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+async function subscribeNewsletter() {
+  var emailEl = document.getElementById('newsletter-email');
+  var email = emailEl?.value?.trim();
+  if (!email || !email.includes('@')) { showToast('Zadejte platný email'); return; }
+  try {
+    var sb = await getSupabase();
+    sb.from('newsletter_subscribers').insert([{ email }]).then(({ error }) => {
+      if (error && error.code === '23505') { showToast('Tento email je již přihlášen'); }
+      else if (error) { showToast('Chyba: ' + error.message); }
+      else { showToast('✓ Přihlášeni! Slevový kód vám přijde emailem.'); if (emailEl) emailEl.value = ''; }
+    });
+  } catch (e) { showToast('Chyba: ' + e.message); }
+}
+window.subscribeNewsletter = subscribeNewsletter;
+</script>

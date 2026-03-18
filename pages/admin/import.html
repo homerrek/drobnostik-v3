@@ -1,0 +1,210 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:24px;">📁 Import / Export</h1>
+
+      <!-- Import CSV -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;margin-bottom:20px;">
+        <h2 style="font-size:16px;font-weight:700;margin-bottom:6px;">📥 Import produktů z CSV</h2>
+        <p style="color:#666;font-size:13px;margin-bottom:18px;">
+          Formát CSV: <code style="background:#111;padding:2px 8px;border-radius:4px;color:#c8a96a;">name,category,description,price_standard,price_small,price_maxi,stock_quantity</code>
+        </p>
+        <div style="border:2px dashed #333;border-radius:8px;padding:32px;text-align:center;margin-bottom:16px;cursor:pointer;transition:border-color 0.2s;"
+          onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#333'"
+          onclick="document.getElementById('csv-file').click()">
+          <div style="font-size:36px;margin-bottom:8px;">📎</div>
+          <div style="color:#ccc;font-size:15px;margin-bottom:4px;">Klikněte nebo přetáhněte CSV soubor</div>
+          <div style="color:#555;font-size:13px;">Podporované formáty: .csv (max 5MB)</div>
+          <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="previewCSV()">
+        </div>
+        <div id="csv-preview" style="display:none;margin-bottom:14px;"></div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="document.getElementById('csv-file').click()" class="btn-secondary" style="padding:10px 18px;">Vybrat soubor</button>
+          <button onclick="importCSV()" class="btn-primary" style="padding:10px 20px;" id="import-btn" disabled>📥 Importovat</button>
+        </div>
+      </div>
+
+      <!-- Export options -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;margin-bottom:20px;">
+        <h2 style="font-size:16px;font-weight:700;margin-bottom:18px;">📤 Export dat</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+          <button onclick="exportData('products')" style="padding:16px;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#ccc;cursor:pointer;text-align:left;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#2a2a2a'">
+            <div style="font-size:24px;margin-bottom:6px;">📦</div>
+            <div style="font-weight:600;margin-bottom:3px;">Produkty</div>
+            <div style="font-size:12px;color:#555;">CSV export všech produktů</div>
+          </button>
+          <button onclick="exportData('orders')" style="padding:16px;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#ccc;cursor:pointer;text-align:left;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#2a2a2a'">
+            <div style="font-size:24px;margin-bottom:6px;">🛒</div>
+            <div style="font-weight:600;margin-bottom:3px;">Objednávky</div>
+            <div style="font-size:12px;color:#555;">CSV export objednávek</div>
+          </button>
+          <button onclick="exportData('customers')" style="padding:16px;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#ccc;cursor:pointer;text-align:left;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#2a2a2a'">
+            <div style="font-size:24px;margin-bottom:6px;">👥</div>
+            <div style="font-weight:600;margin-bottom:3px;">Zákazníci</div>
+            <div style="font-size:12px;color:#555;">CSV export zákazníků</div>
+          </button>
+          <button onclick="exportData('newsletter')" style="padding:16px;background:#111;border:1px solid #2a2a2a;border-radius:8px;color:#ccc;cursor:pointer;text-align:left;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#c8a96a'" onmouseout="this.style.borderColor='#2a2a2a'">
+            <div style="font-size:24px;margin-bottom:6px;">📧</div>
+            <div style="font-weight:600;margin-bottom:3px;">Newsletter</div>
+            <div style="font-size:12px;color:#555;">CSV export odběratelů</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Import log -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;">
+        <h2 style="font-size:16px;font-weight:700;margin-bottom:14px;">📋 Import log</h2>
+        <div id="import-log" style="font-family:monospace;font-size:12px;color:#777;line-height:1.9;min-height:60px;">
+          Zatím žádný import...
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+var csvData = [];
+
+function previewCSV() {
+  var file = document.getElementById('csv-file')?.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    var lines = text.trim().split('\n');
+    if (lines.length < 2) { showToast('CSV musí mít alespoň 2 řádky (hlavičku + data)'); return; }
+
+    var headers = lines[0].split(',').map(h => h.trim().replace(/"/g,''));
+    csvData = lines.slice(1).map(line => {
+      var vals = line.split(',').map(v => v.trim().replace(/"/g,''));
+      var obj = {};
+      headers.forEach((h, i) => { obj[h] = vals[i] || ''; });
+      return obj;
+    }).filter(row => row.name);
+
+    var preview = document.getElementById('csv-preview');
+    if (preview) {
+      preview.style.display = 'block';
+      preview.innerHTML = `
+        <div style="background:#111;border-radius:8px;padding:14px;border:1px solid #2a2a2a;">
+          <div style="color:#4f4;margin-bottom:8px;font-size:13px;">✓ Soubor načten: ${file.name} — ${csvData.length} produktů</div>
+          <div style="overflow-x:auto;"><table class="data-table" style="min-width:400px;">
+            <thead><tr>${headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
+            <tbody>${csvData.slice(0,3).map(row => `<tr>${headers.map(h => `<td style="font-size:12px;">${escapeHtml(String(row[h]||''))}</td>`).join('')}</tr>`).join('')}
+            ${csvData.length > 3 ? `<tr><td colspan="${headers.length}" style="text-align:center;color:#555;font-size:12px;">... a ${csvData.length-3} dalších</td></tr>` : ''}
+            </tbody>
+          </table></div>
+        </div>`;
+    }
+    var btn = document.getElementById('import-btn');
+    if (btn) { btn.disabled = false; btn.textContent = `📥 Importovat ${csvData.length} produktů`; }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+async function importCSV() {
+  if (!csvData.length) { showToast('Nejdříve vyberte CSV soubor'); return; }
+  var btn = document.getElementById('import-btn');
+  var log = document.getElementById('import-log');
+  if (btn) { btn.disabled = true; btn.textContent = 'Importuji...'; }
+
+  var success = 0, errors = 0;
+  var logLines = [`[${new Date().toLocaleTimeString()}] Zahájení importu ${csvData.length} produktů...`];
+
+  try {
+    var sb = await getSupabase();
+    for (const row of csvData) {
+      try {
+        await sb.from('products').insert([{
+          name: row.name,
+          category: row.category || 'Pokebally',
+          description: row.description || '',
+          price_standard: parseInt(row.price_standard) || 0,
+          price_small: parseInt(row.price_small) || 0,
+          price_maxi: parseInt(row.price_maxi) || 0,
+          stock_quantity: parseInt(row.stock_quantity) || 0,
+          is_active: true
+        }]);
+        success++;
+        logLines.push(`[OK] ${row.name}`);
+      } catch(e) {
+        errors++;
+        logLines.push(`[CHYBA] ${row.name}: ${e.message}`);
+      }
+    }
+  } catch(e) {
+    logLines.push(`[KRITICKÁ CHYBA] ${e.message}`);
+  }
+
+  logLines.push(`\n✅ Hotovo: ${success} úspěšně, ${errors} chyb`);
+  if (log) log.innerHTML = logLines.map(l => escapeHtml(l)).join('<br>');
+  if (btn) { btn.disabled = false; btn.textContent = '📥 Importovat'; }
+  showToast(`✓ Import dokončen: ${success} OK, ${errors} chyb`);
+  csvData = [];
+}
+
+async function exportData(type) {
+  try {
+    var sb = await getSupabase();
+    var ta, headers, filename;
+
+    if (type === 'products') {
+      var res = await sb.from('products').select('*');
+      data = res.data || [];
+      headers = ['id','name','category','description','price_small','price_standard','price_maxi','stock_quantity','sold_count','sku','is_active'];
+      filename = 'produkty';
+    } else if (type === 'orders') {
+      var res = await sb.from('orders').select('*').order('created_at', { ascending: false });
+      data = res.data || [];
+      headers = ['order_number','customer_name','customer_email','customer_city','shipping_method','total_amount','status','created_at'];
+      filename = 'objednavky';
+    } else if (type === 'customers') {
+      var res = await sb.from('orders').select('customer_name,customer_email,customer_city,total_amount,created_at');
+      data = res.data || [];
+      headers = ['customer_name','customer_email','customer_city','total_amount','created_at'];
+      filename = 'zakaznici';
+    } else if (type === 'newsletter') {
+      var res = await sb.from('newsletter_subscribers').select('*');
+      data = res.data || [];
+      headers = ['email','source','subscribed_at'];
+      filename = 'newsletter';
+    }
+
+    if (!data.length) { showToast('Žádná data k exportu'); return; }
+
+    var rows = [headers, ...data.map(row => headers.map(h => String(row[h] ?? '').replace(/"/g,'""')))];
+    var csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = `drobnostik-${filename}-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`✓ Export ${filename} stažen (${data.length} řádků)`);
+  } catch(e) { showToast('Chyba exportu: ' + e.message); }
+}
+
+window.previewCSV = previewCSV;
+window.importCSV = importCSV;
+window.exportData = exportData;
+</script>

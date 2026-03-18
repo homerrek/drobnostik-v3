@@ -1,0 +1,186 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:1000px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Komunita</span></nav>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h1 style="font-size:32px;font-weight:700;margin-bottom:6px;">💬 Komunita</h1>
+        <p style="color:#777;font-size:14px;">Diskutujte s ostatními fanoušky Pokeballů</p>
+      </div>
+      <button onclick="showNewThreadForm()" class="btn-primary" style="padding:11px 20px;">+ Nové vlákno</button>
+    </div>
+
+    <!-- Categories -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:28px;" id="forum-categories">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Thread list -->
+    <div id="forum-threads"><div class="loading-spinner"></div></div>
+
+    <!-- New thread modal (hidden) -->
+    <div id="new-thread-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:28px;width:100%;max-width:500px;">
+        <h2 style="font-size:18px;font-weight:700;margin-bottom:18px;">Nové vlákno</h2>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div><label>Nadpis *</label><input id="thread-title" type="text" placeholder="O čem chcete diskutovat?" style="width:100%;padding:11px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Kategorie</label>
+            <select id="thread-category" style="width:100%;padding:11px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+              <option value="obecné">Obecné</option>
+              <option value="produkty">Produkty</option>
+              <option value="sbírání">Sbírání</option>
+              <option value="pomoc">Pomoc & podpora</option>
+              <option value="nápady">Nápady</option>
+            </select>
+          </div>
+          <div><label>Jméno *</label><input id="thread-author" type="text" placeholder="Vaše jméno" style="width:100%;padding:11px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>Text *</label><textarea id="thread-body" rows="4" placeholder="Napište svůj příspěvek..." style="width:100%;padding:11px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;resize:vertical;"></textarea></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button onclick="submitThread()" class="btn-primary" style="flex:1;padding:11px;">Zveřejnit</button>
+          <button onclick="hideNewThreadForm()" class="btn-secondary" style="padding:11px 16px;">Zrušit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+var FORUM_CATS = [
+  { name:'Obecné',          icon:'💬', desc:'Vše ostatní',               count:12 },
+  { name:'Produkty',        icon:'🎮', desc:'Diskuse o Pokeballech',     count:28 },
+  { name:'Sbírání',         icon:'⭐', desc:'Kolekce a sběratelství',     count:9  },
+  { name:'Pomoc & podpora', icon:'🆘', desc:'Otázky a odpovědi',          count:15 },
+  { name:'Nápady',          icon:'💡', desc:'Návrhy nových produktů',     count:6  },
+];
+
+var STATIC_THREADS = [
+  { id:1, title:'Jak nejlépe vystavit pokebally na polici?',   category:'sbírání',         author:'Marek J.', replies:8,  views:234, date:'2026-03-14', pinned:true  },
+  { id:2, title:'Shadow Edition — stojí to za to?',           category:'produkty',        author:'Petra N.', replies:14, views:389, date:'2026-03-13', pinned:false },
+  { id:3, title:'Tip: čištění suchým hadříkem z mikrovlákna', category:'produkty',        author:'Ondřej K.',replies:5,  views:178, date:'2026-03-12', pinned:false },
+  { id:4, title:'Kdo sbírá všechny tři barvy?',               category:'sbírání',         author:'Anežka B.',replies:22, views:512, date:'2026-03-10', pinned:false },
+  { id:5, title:'Přání: Pokeball v červené barvě!',           category:'nápady',          author:'Tomáš V.', replies:19, views:445, date:'2026-03-08', pinned:false },
+  { id:6, title:'Dotaz ohledně doručení na Slovensko',        category:'pomoc & podpora', author:'Jakub H.', replies:3,  views:89,  date:'2026-03-07', pinned:false },
+];
+
+function filterThreads(category) {
+  var el = document.getElementById('forum-threads');
+  if (!el) return;
+  var list = category
+    ? STATIC_THREADS.filter(t => t.category.toLowerCase().includes(category.toLowerCase()))
+    : STATIC_THREADS;
+  renderThreadList(list, el);
+  document.querySelectorAll('#forum-categories > div').forEach(d => {
+    d.style.borderColor = '#2a2a2a';
+    d.style.background = '#1a1a1a';
+  });
+}
+window.filterThreads = filterThreads;
+
+function renderThreadList(threads, container) {
+  if (!threads || !threads.length) {
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:#777;">Žádná vlákna v této kategorii.</div>';
+    return;
+  }
+  container.innerHTML = '<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;overflow:hidden;">'
+    + '<div style="padding:14px 20px;background:#111;border-bottom:1px solid #222;display:grid;grid-template-columns:1fr 80px 80px 100px;gap:16px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.5px;">'
+    + '<span>Vlákno</span><span style="text-align:center;">Odpovědi</span><span style="text-align:center;">Zobrazení</span><span>Datum</span>'
+    + '</div>'
+    + threads.map(function(t) {
+        return '<div onclick="openThread(' + t.id + ')"'
+          + ' style="padding:16px 20px;border-bottom:1px solid #1a1a1a;display:grid;grid-template-columns:1fr 80px 80px 100px;gap:16px;align-items:center;cursor:pointer;transition:background 0.15s;"'
+          + ' onmouseover="this.style.background=\'#222\'" onmouseout="this.style.background=\'transparent\'">'
+          + '<div>'
+          + (t.pinned ? '<span style="font-size:10px;background:#c8a96a;color:#000;padding:2px 6px;border-radius:3px;margin-right:6px;font-weight:700;">📌</span>' : '')
+          + '<span style="font-weight:600;font-size:14px;">' + escapeHtml(t.title) + '</span>'
+          + '<div style="font-size:12px;color:#666;margin-top:3px;">od <strong>' + escapeHtml(t.author) + '</strong>'
+          + ' <span style="background:rgba(100,100,200,0.15);color:#aaf;padding:1px 6px;border-radius:3px;font-size:11px;">' + escapeHtml(t.category) + '</span></div>'
+          + '</div>'
+          + '<div style="text-align:center;color:#c8a96a;font-weight:600;">' + t.replies + '</div>'
+          + '<div style="text-align:center;color:#777;">' + t.views + '</div>'
+          + '<div style="color:#555;font-size:12px;">' + (t.date || '') + '</div>'
+          + '</div>';
+      }).join('')
+    + '</div>';
+}
+window.renderThreadList = renderThreadList;
+
+async function openThread(id) {
+  sessionStorage.setItem('forumThreadId', String(id));
+  goTo('/forum/thread');
+}
+window.openThread = openThread;
+
+async function loadForum() {
+  var catsEl = document.getElementById('forum-categories');
+  var threadsEl = document.getElementById('forum-threads');
+  if (!catsEl || !threadsEl) return;
+
+  // Try to load threads from DB first, fallback to static
+  try {
+    var sb = await getSupabase();
+    var { data: dbThreads } = await sb.from('forum_threads')
+      .select('*').order('is_pinned', { ascending: false })
+      .order('created_at', { ascending: false }).limit(20);
+    if (dbThreads && dbThreads.length > 0) {
+      STATIC_THREADS.splice(0, STATIC_THREADS.length, ...dbThreads.map(function(t) {
+        return { id:t.id, title:t.title, category:t.category, author:t.author_name,
+                 replies:t.replies_count, views:t.views_count, date:t.created_at?.slice(0,10), pinned:t.is_pinned };
+      }));
+    }
+  } catch(e) {}
+
+  catsEl.innerHTML = '<div onclick="filterThreads(null)"'
+    + ' style="padding:16px;background:#1a1a1a;border:2px solid #c8a96a;border-radius:8px;cursor:pointer;transition:all 0.2s;"'
+    + ' onmouseover="this.style.opacity=\'0.85\'" onmouseout="this.style.opacity=\'1\'">'
+    + '<div style="font-size:24px;margin-bottom:6px;">🌐</div>'
+    + '<div style="font-weight:600;font-size:14px;margin-bottom:3px;">Vše</div>'
+    + '<div style="color:#666;font-size:12px;">Všechna vlákna</div>'
+    + '</div>'
+    + FORUM_CATS.map(function(c) {
+        return '<div onclick="filterThreads(\'' + escapeHtml(c.name.toLowerCase()) + '\')"'
+          + ' style="padding:16px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;cursor:pointer;transition:all 0.2s;"'
+          + ' onmouseover="this.style.borderColor=\'#c8a96a\';this.style.background=\'#222\'"'
+          + ' onmouseout="this.style.borderColor=\'#2a2a2a\';this.style.background=\'#1a1a1a\'">'
+          + '<div style="font-size:24px;margin-bottom:6px;">' + c.icon + '</div>'
+          + '<div style="font-weight:600;font-size:14px;margin-bottom:3px;">' + escapeHtml(c.name) + '</div>'
+          + '<div style="color:#666;font-size:12px;">' + escapeHtml(c.desc) + '</div>'
+          + '<div style="color:#c8a96a;font-size:12px;margin-top:6px;">' + c.count + ' vláken</div>'
+          + '</div>';
+      }).join('');
+
+  renderThreadList(STATIC_THREADS, threadsEl);
+}
+window.loadForum = loadForum;
+
+async function showNewThreadForm() {
+  var modal = document.getElementById('new-thread-modal');
+  if (modal) modal.style.display = 'flex';
+}
+async function hideNewThreadForm() {
+  var modal = document.getElementById('new-thread-modal');
+  if (modal) modal.style.display = 'none';
+}
+window.showNewThreadForm = showNewThreadForm;
+window.hideNewThreadForm = hideNewThreadForm;
+
+async function submitThread() {
+  var title    = document.getElementById('thread-title')?.value?.trim();
+  var category = document.getElementById('thread-category')?.value || 'obecné';
+  var author   = document.getElementById('thread-author')?.value?.trim();
+  var body     = document.getElementById('thread-body')?.value?.trim();
+  if (!title || !author || !body) { showToast('Vyplňte všechna povinná pole.'); return; }
+  try {
+    var sb = await getSupabase();
+    await sb.from('forum_threads').insert([{ title, category, author_name: author, body }]);
+    showToast('✓ Vlákno vytvořeno!');
+    hideNewThreadForm();
+    loadForum();
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+window.submitThread = submitThread;
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof loadForum === 'function') loadForum();
+});
+</script>
+

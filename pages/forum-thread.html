@@ -1,0 +1,122 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:800px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <a href="/forum" onclick="event.preventDefault();goTo('/forum')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Komunita</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Vlákno</span></nav>
+    <button onclick="goTo('/forum')" style="background:none;border:none;color:#c8a96a;cursor:pointer;font-size:14px;margin-bottom:24px;padding:0;">← Zpět na fórum</button>
+    <div id="thread-content"><div class="loading-spinner"></div></div>
+  </div>
+</main>
+
+<script>
+var THREAD_DATA = {
+  1: {
+    title: 'Jak nejlépe vystavit pokebally na polici?',
+    category: 'sbírání', author: 'Marek J.', date: '2026-03-14',
+    body: 'Zdravím, mám teď 6 pokeballů a nevím jak je nejlépe vystavit. Zkusil jsem je dát do řady, ale padají. Máte někdo tip?',
+    replies: [
+      { author: 'Jana K.', date: '2026-03-14', text: 'Doporučuji akrylové stojany! Drobnostík je má v eshopu — Pokeball Display Stand. Perfektně drží a vypadají elegantně.', liked: 12 },
+      { author: 'Ondřej M.', date: '2026-03-14', text: 'Já mám na polici kobercový pásek (velcro) — přilepím kousek na polici a pokeball na něj nasadím. Nikam nejede a jde to kdykoliv odlepit.', liked: 8 },
+      { author: 'Tým Drobnostík', date: '2026-03-15', text: 'Dobrý tip od Jany! Naše Display Standy jsou navrženy přesně pro tento účel. Při koupi 3+ kusů nabízíme 10% slevu. 😊', liked: 5, official: true },
+    ]
+  },
+};
+
+async function loadForumThread() {
+  var params = new URLSearchParams(window.location.search);
+  var id = parseInt(params.get('id')) || parseInt(sessionStorage.getItem('forumThreadId')) || 1;
+  var el = document.getElementById('thread-content');
+  if (!el) return;
+
+  var thread = THREAD_DATA[id] || THREAD_DATA[1];
+
+  el.innerHTML = `
+    <div>
+      <div style="font-size:12px;color:#c8a96a;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${escapeHtml(thread.category)}</div>
+      <h1 style="font-size:clamp(20px,4vw,28px);font-weight:700;margin-bottom:16px;">${escapeHtml(thread.title)}</h1>
+
+      <!-- Original post -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:20px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div style="width:36px;height:36px;background:linear-gradient(135deg,#c8a96a,#b8995a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:14px;">${thread.author[0]}</div>
+          <div><div style="font-weight:600;font-size:14px;">${escapeHtml(thread.author)}</div><div style="color:#555;font-size:12px;">${formatDate(thread.date)}</div></div>
+        </div>
+        <p style="color:#ccc;line-height:1.7;">${escapeHtml(thread.body)}</p>
+      </div>
+
+      <!-- Replies -->
+      <div style="font-size:14px;color:#777;margin-bottom:14px;">${thread.replies.length} odpovědí</div>
+      ${thread.replies.map(r => `
+        <div style="background:${r.official ? 'rgba(200,169,106,0.06)' : '#111'};border:1px solid ${r.official ? 'rgba(200,169,106,0.2)' : '#1e1e1e'};border-radius:8px;padding:16px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <div style="width:32px;height:32px;background:${r.official ? 'linear-gradient(135deg,#c8a96a,#b8995a)' : '#2a2a2a'};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${r.official ? '#000' : '#ccc'};">${r.author[0]}</div>
+            <div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-weight:600;font-size:13px;">${escapeHtml(r.author)}</span>
+                ${r.official ? '<span style="font-size:10px;background:rgba(200,169,106,0.2);color:#c8a96a;padding:2px 7px;border-radius:10px;">Oficální</span>' : ''}
+              </div>
+              <div style="color:#555;font-size:11px;">${formatDate(r.date)}</div>
+            </div>
+            <div style="margin-left:auto;font-size:12px;color:#555;">👍 ${r.liked}</div>
+          </div>
+          <p style="color:#ccc;line-height:1.7;font-size:14px;">${escapeHtml(r.text)}</p>
+        </div>`).join('')}
+
+      <!-- Reply form -->
+      <div style="margin-top:24px;padding:20px;background:#1a1a1a;border-radius:10px;border:1px solid #2a2a2a;">
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:14px;">Napsat odpověď</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input id="reply-name" type="text" placeholder="Vaše jméno" style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;">
+          <textarea id="reply-text" rows="3" placeholder="Vaše odpověď..." style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;resize:vertical;"></textarea>
+          <button onclick="submitReply(${id})" class="btn-primary" style="padding:11px;font-size:14px;">Odeslat odpověď</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function likeReply(id, current) {
+  try {
+    var sb = await getSupabase();
+    var liked = JSON.parse(localStorage.getItem('liked_replies')||'[]');
+    if (liked.includes(id)) { showToast('Již jste hlasoval'); return; }
+    liked.push(id);
+    localStorage.setItem('liked_replies', JSON.stringify(liked));
+    await sb.from('forum_replies').update({ likes: (current||0)+1 }).eq('id', id);
+    loadForumThread();
+  } catch(e) { showToast('Chyba'); }
+}
+
+async function quoteReply(author, text) {
+  var textarea = document.getElementById('reply-text');
+  if (textarea) {
+    textarea.value = `> ${author}: "${text.slice(0,80)}..."
+
+`;
+    textarea.focus();
+    textarea.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+}
+
+async function markSolved(threadId) {
+  try {
+    var sb = await getSupabase();
+    await sb.from('forum_threads').update({ is_locked: true }).eq('id', threadId);
+    showToast('✓ Vlákno označeno jako vyřešené');
+    document.getElementById('solve-btn')?.remove();
+  } catch(e) {}
+}
+
+async function submitReply(threadId) {
+  var name = document.getElementById('reply-name')?.value?.trim();
+  var text = document.getElementById('reply-text')?.value?.trim();
+  if (!name || !text) { showToast('Vyplňte jméno a text'); return; }
+  try {
+    var sb = await getSupabase();
+    await sb.from('forum_replies').insert([{ thread_id: threadId, author_name: name, body: text }]);
+  } catch(e) {}
+  showToast('✓ Odpověď přidána!');
+  if (document.getElementById('reply-name')) document.getElementById('reply-name').value = '';
+  if (document.getElementById('reply-text')) document.getElementById('reply-text').value = '';
+}
+
+window.loadForumThread = loadForumThread;
+window.submitReply = submitReply;
+</script>

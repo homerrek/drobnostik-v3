@@ -1,0 +1,75 @@
+<main style="padding:40px 20px;">
+  <div style="max-width:900px;margin:0 auto;">
+    <nav aria-label="Breadcrumb" style="margin-bottom:20px;"><a href="/" onclick="event.preventDefault();goTo('/')" style="color:#666;font-size:13px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#c8a96a'" onmouseout="this.style.color='#666'">Domů</a> <span style="color:#444;font-size:12px;">›</span> <span style="color:#999;font-size:13px;">Recenze</span></nav>
+    <h1 style="font-size:32px;font-weight:700;margin-bottom:8px;">⭐ Recenze zákazníků</h1>
+    <p style="color:#777;margin-bottom:28px;font-size:15px;">Co říkají naši zákazníci</p>
+
+    <div id="reviews-summary" style="margin-bottom:32px;"></div>
+    <div id="reviews-list"><div class="loading-spinner"></div></div>
+  </div>
+</main>
+
+<script>
+async function loadReviews() {
+  var list = document.getElementById('reviews-list');
+  var summary = document.getElementById('reviews-summary');
+  if (!list) return;
+  try {
+    var sb = await getSupabase();
+    var { data: reviews, error } = await sb.from('reviews').select('*, products(name)').order('created_at', { ascending: false });
+    if (error) throw error;
+
+    if (!reviews || reviews.length === 0) {
+      list.innerHTML = '<div style="text-align:center;padding:60px;color:#777;">Zatím žádné recenze.</div>';
+      return;
+    }
+
+    var avg = reviews.reduce((s,r) => s + r.rating, 0) / reviews.length;
+    var dist = [5,4,3,2,1].map(r => ({ r, count: reviews.filter(x => x.rating === r).length }));
+
+    if (summary) {
+      summary.innerHTML = `
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:center;" class="grid-product">
+          <div style="text-align:center;">
+            <div style="font-size:56px;font-weight:700;color:#c8a96a;">${avg.toFixed(1)}</div>
+            <div style="color:#c8a96a;font-size:22px;margin-bottom:4px;">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5-Math.round(avg))}</div>
+            <div style="color:#666;font-size:13px;">${reviews.length} recenzí</div>
+          </div>
+          <div>${dist.map(({r, count}) => `
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+              <span style="color:#999;font-size:13px;min-width:12px;">${r}</span>
+              <span style="color:#c8a96a;font-size:12px;">★</span>
+              <div style="flex:1;background:#2a2a2a;border-radius:4px;height:8px;overflow:hidden;">
+                <div style="width:${reviews.length ? (count/reviews.length*100) : 0}%;background:#c8a96a;height:100%;border-radius:4px;transition:width 0.6s;"></div>
+              </div>
+              <span style="color:#666;font-size:12px;min-width:24px;">${count}</span>
+            </div>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    list.innerHTML = reviews.map(r => `
+      <div style="padding:20px 0;border-bottom:1px solid #1e1e1e;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#c8a96a,#b8995a);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:15px;">
+              ${(r.author_name||'A')[0].toUpperCase()}
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:15px;">${escapeHtml(r.author_name||'Anonymní')}</div>
+              ${r.products ? `<div style="font-size:12px;color:#666;">k produktu: <span style="color:#c8a96a;">${escapeHtml(r.products.name)}</span></div>` : ''}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="color:#c8a96a;font-size:16px;">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
+            <span style="color:#555;font-size:12px;">${formatDate(r.created_at)}</span>
+          </div>
+        </div>
+        <p style="color:#bbb;font-size:14px;line-height:1.8;margin:0;">${escapeHtml(r.text||'')}</p>
+      </div>`).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:#f44;text-align:center;padding:40px;">Chyba: ${e.message}</div>`;
+  }
+}
+window.loadReviews = loadReviews;
+</script>

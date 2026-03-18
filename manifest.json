@@ -1,0 +1,13 @@
+{
+  "name": "Drobnostík",
+  "short_name": "Drobnostík",
+  "description": "Prémiové 3D tisknuté Pokebally z Česka",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#c8a96a",
+  "icons": [
+    { "src": "/images/logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/images/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

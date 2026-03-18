@@ -1,0 +1,52 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+        <h1 style="font-size:22px;font-weight:700;">Objednávky</h1>
+        <select id="filter-order-status" onchange="loadAdminOrders()" style="padding:9px 14px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;">
+          <option value="">Všechny stavy</option>
+          <option value="pending">Čekající</option>
+          <option value="processing">Zpracovává se</option>
+          <option value="printing">Tisk</option>
+          <option value="shipped">Odesláno</option>
+          <option value="delivered">Doručeno</option>
+          <option value="cancelled">Zrušeno</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;" id="bulk-order-actions">
+        <select id="bulk-status-select" style="padding:8px 12px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;font-size:13px;">
+          <option value="">Nastavit stav...</option>
+          <option value="processing">Zpracovává se</option>
+          <option value="printing">Tisk</option>
+          <option value="shipped">Odesláno</option>
+          <option value="delivered">Doručeno</option>
+          <option value="cancelled">Zrušeno</option>
+        </select>
+        <button onclick="bulkUpdateOrders()" style="padding:8px 14px;background:rgba(200,169,106,0.15);color:#c8a96a;border:1px solid rgba(200,169,106,0.2);border-radius:6px;cursor:pointer;font-size:13px;">Aplikovat na vybrané</button>
+      </div>
+      <div id="admin-orders-list"><div class="loading-spinner"></div></div>
+<script>
+document.addEventListener("DOMContentLoaded",function(){if(typeof loadAdminOrders==="function")loadAdminOrders();});
+</script>
+    </div>
+  </div>
+</main>

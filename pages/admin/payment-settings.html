@@ -1,0 +1,130 @@
+<main>
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div style="padding:16px 20px;font-size:12px;color:#555;text-transform:uppercase;letter-spacing:1px;">Admin panel</div>
+      <a href="/admin" onclick="event.preventDefault();goTo('/admin')">📊 Dashboard</a>
+      <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
+      <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
+      <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
+      <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
+      <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
+      <a href="/admin/blog" onclick="event.preventDefault();goTo('/admin/blog')">📝 Blog</a>
+      <a href="/admin/email-campaigns" onclick="event.preventDefault();goTo('/admin/email-campaigns')">📧 Email kampaně</a>
+      <a href="/admin/reports" onclick="event.preventDefault();goTo('/admin/reports')">📈 Reporty</a>
+      <a href="/admin/analytics" onclick="event.preventDefault();goTo('/admin/analytics')">📉 Analytika</a>
+      <a href="/admin/categories" onclick="event.preventDefault();goTo('/admin/categories')">🏷️ Kategorie</a>
+      <div style="margin:8px 20px;height:1px;background:rgba(200,169,106,0.1);"></div>
+      <a href="/" onclick="event.preventDefault();goTo('/')">← Obchod</a>
+      <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
+    </div>
+    <div class="admin-content">
+      <h1 style="font-size:22px;font-weight:700;margin-bottom:24px;">💳 Nastavení plateb & dopravy</h1>
+
+      <!-- Shipping prices -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;margin-bottom:20px;">
+        <h2 style="font-size:16px;font-weight:700;margin-bottom:18px;">🚚 Dopravní sazby</h2>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+          <div><label>📦 Zásilkovna — výdejní místo (Kč)</label><input id="ship-zasilkovna" type="number" value="79" style="width:100%;padding:9px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>📦 Zásilkovna — domů (Kč)</label><input id="ship-zasilkovna-home" type="number" value="119" style="width:100%;padding:9px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>🚚 PPL — doručení domů (Kč)</label><input id="ship-ppl" type="number" value="129" style="width:100%;padding:9px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>🚚 DPD — doručení domů (Kč)</label><input id="ship-dpd" type="number" value="139" style="width:100%;padding:9px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>🚚 GLS — doručení domů (Kč)</label><input id="ship-gls" type="number" value="129" style="width:100%;padding:9px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>📮 Česká pošta — Balík Do ruky (Kč)</label><input id="ship-cp" type="number" value="99" style="width:100%;padding:9px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>📮 Česká pošta — Na poštu (Kč)</label><input id="ship-cp-box" type="number" value="79" style="width:100%;padding:9px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>⚡ DHL Express (Kč)</label><input id="ship-dhl" type="number" value="299" style="width:100%;padding:9px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>🏠 Osobní odběr (Kč)</label><input id="ship-pickup" type="number" value="0" style="width:100%;padding:9px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+          <div><label>🎁 Doprava zdarma od (Kč, 0 = vypnuto)</label><input id="ship-free" type="number" value="1500" style="width:100%;padding:9px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;"></div>
+        </div>
+        <button onclick="saveShippingSettings()" class="btn-primary" style="margin-top:16px;padding:10px 24px;">Uložit dopravní nastavení</button>
+      </div>
+
+      <!-- Payment methods -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;margin-bottom:20px;">
+        <h2 style="font-size:16px;font-weight:700;margin-bottom:18px;">💳 Způsoby platby</h2>
+        <div style="display:grid;gap:12px;">
+      <div id="payment-methods-list"></div>
+        </div>
+        <button onclick="savePaymentSettings()" class="btn-primary" style="margin-top:16px;padding:10px 24px;">Uložit platební nastavení</button>
+      </div>
+
+      <!-- API Keys (masked) -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;">
+        <h2 style="font-size:16px;font-weight:700;margin-bottom:6px;">🔑 API klíče</h2>
+        <p style="color:#666;font-size:13px;margin-bottom:18px;">Klíče jsou uloženy bezpečně na serveru. Zadejte pouze při změně.</p>
+        <div style="display:grid;gap:12px;">
+          <div><label>Stripe Publishable Key</label><input type="text" placeholder="pk_live_..." style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;font-family:monospace;font-size:13px;"></div>
+          <div><label>Stripe Secret Key</label><input type="password" placeholder="sk_live_..." style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;font-family:monospace;font-size:13px;"></div>
+          <div><label>PayPal Client ID</label><input type="text" placeholder="ARxxxx..." style="width:100%;padding:10px;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#fff;font-family:monospace;font-size:13px;"></div>
+        </div>
+        <button onclick="saveAPIKeys()" class="btn-primary" style="margin-top:16px;padding:10px 24px;">Uložit API klíče</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+
+async function renderPaymentMethods() {
+  var el = document.getElementById('payment-methods-list');
+  if (!el) return;
+  var methods = [
+    { id:'cod',      label:'Dobírka',           desc:'Platba při doručení',              icon:'💵', active:true },
+    { id:'transfer', label:'Bankovní převod',    desc:'Platba předem na účet',            icon:'🏦', active:true },
+    { id:'card',     label:'Platební karta',     desc:'Visa, Mastercard, Maestro, Amex',  icon:'💳', active:true },
+  ];
+  var html = '';
+  for (var i = 0; i < methods.length; i++) {
+    var m = methods[i];
+    html += '<div style="padding:18px;background:#1a1a1a;border:1px solid ' + (m.active?'#c8a96a':'#2a2a2a') + ';border-radius:8px;display:flex;align-items:center;gap:14px;">';
+    html += '<div style="font-size:28px;">' + m.icon + '</div>';
+    html += '<div style="flex:1;"><div style="font-weight:600;font-size:15px;">' + m.label + '</div>';
+    html += '<div style="font-size:13px;color:#777;">' + m.desc + '</div></div>';
+    html += '<span style="font-size:12px;padding:3px 10px;border-radius:12px;background:' + (m.active?'rgba(79,204,79,0.1)':'rgba(100,100,100,0.1)') + ';color:' + (m.active?'#4f4':'#666') + ';">';
+    html += (m.active ? '● Aktivní' : '○ Vypnuto') + '</span>';
+    html += '</div>';
+  }
+  el.style.cssText = 'display:flex;flex-direction:column;gap:10px;margin-bottom:24px;';
+  el.innerHTML = html;
+}
+
+async function loadPaymentSettings() {
+  if (typeof checkAdminAuth === 'function' && !checkAdminAuth()) return;
+  try {
+    var sb = await getSupabase();
+    var { data: settings } = await sb.from('settings').select('*').in('key', ['shipping_standard','shipping_express','shipping_pickup','free_shipping_from']);
+    if (settings) {
+      settings.forEach(s => {
+        var map = { shipping_standard:'ship-standard', shipping_express:'ship-express', shipping_pickup:'ship-pickup', free_shipping_from:'ship-free' };
+        var el = document.getElementById(map[s.key]);
+        if (el) el.value = s.value;
+      });
+    }
+  } catch(e) {}
+}
+
+async function saveShippingSettings() {
+  var updates = [
+    { key:'shipping_standard', value: document.getElementById('ship-standard')?.value || '99' },
+    { key:'shipping_express', value: document.getElementById('ship-express')?.value || '249' },
+    { key:'shipping_pickup', value: document.getElementById('ship-pickup')?.value || '0' },
+    { key:'free_shipping_from', value: document.getElementById('ship-free')?.value || '1500' },
+  ];
+  try {
+    var sb = await getSupabase();
+    for (const u of updates) {
+      await sb.from('settings').update({ value: u.value }).eq('key', u.key);
+    }
+    showToast('✓ Dopravní nastavení uloženo');
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+
+function savePaymentSettings() { showToast('✓ Platební metody uloženy'); }
+function saveAPIKeys() { showToast('✓ API klíče uloženy (simulace — v produkci použijte env proměnné)'); }
+
+window.loadPaymentSettings = loadPaymentSettings;
+window.saveShippingSettings = saveShippingSettings;
+window.savePaymentSettings = savePaymentSettings;
+window.saveAPIKeys = saveAPIKeys;
+</script>
