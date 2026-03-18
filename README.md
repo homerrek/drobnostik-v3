@@ -15,7 +15,7 @@
 ![Routes](https://img.shields.io/badge/Routes-55-blue)
 ![Tables](https://img.shields.io/badge/DB%20Tables-19-green)
 
-[🌐 Live demo](https://drobnostik.cz) · [🐛 Nahlásit bug](../../issues) · [💬 Fórum](https://drobnostik.cz/forum)
+[🌐 Live demo](https://drobnostik.netlify.app/) · [🐛 Nahlásit bug](../../issues) · [💬 Fórum](https://drobnostik.netlify.app/forum)
 
 </div>
 
@@ -231,5 +231,5 @@ Distribuováno pod licencí **MIT**. Viz [`LICENSE`](LICENSE).
 ---
 
 <div align="center">
-  <sub>Vyrobeno s ❤️ v České republice · <a href="https://drobnostik.cz">drobnostik.cz</a></sub>
+  <sub>Vyrobeno s ❤️ v České republice · <a href="https://drobnostik.netlify.app/forum">drobnostik.netlify.appz</a></sub>
 </div>
