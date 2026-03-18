@@ -1,5 +1,13 @@
+# SPA rewrite
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 RewriteRule ^ index.html [QSA,L]
+
+# Zakázat cache pro všechny soubory
+<FilesMatch "\.(html|htm|js|css|json)$">
+  Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+  Header set Pragma "no-cache"
+  Header set Expires "0"
+</FilesMatch>

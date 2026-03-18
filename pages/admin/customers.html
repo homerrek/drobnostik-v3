@@ -6,7 +6,7 @@
       <a href="/admin/products" onclick="event.preventDefault();goTo('/admin/products')">📦 Produkty</a>
       <a href="/admin/orders" onclick="event.preventDefault();goTo('/admin/orders')">🛒 Objednávky</a>
       <a href="/admin/inventory" onclick="event.preventDefault();goTo('/admin/inventory')">📦 Sklad</a>
-      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')">👥 Zákazníci</a>
+      <a href="/admin/customers" onclick="event.preventDefault();goTo('/admin/customers')" style="color:#c8a96a;">👥 Zákazníci</a>
       <a href="/admin/coupons" onclick="event.preventDefault();goTo('/admin/coupons')">🎟️ Kupóny</a>
       <a href="/admin/tickets" onclick="event.preventDefault();goTo('/admin/tickets')">🎫 Tickety</a>
       <a href="/admin/affiliates" onclick="event.preventDefault();goTo('/admin/affiliates')">🤝 Affiliate</a>
@@ -20,51 +20,178 @@
       <a href="#" onclick="adminLogout()" style="color:#f66 !important;">🚪 Odhlásit</a>
     </div>
     <div class="admin-content">
-      <h1 style="font-size:22px;font-weight:700;margin-bottom:20px;">👥 Zákazníci</h1>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+        <h1 style="font-size:22px;font-weight:700;">👥 Zákazníci</h1>
+        <input id="customer-search" type="text" placeholder="Hledat zákazníka..."
+          oninput="filterCustomers(this.value)"
+          style="padding:9px 14px;border:1px solid #333;border-radius:6px;background:#111;color:#fff;font-size:13px;width:220px;">
+      </div>
+      <div id="customers-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;"></div>
       <div id="customers-list"><div class="loading-spinner"></div></div>
     </div>
   </div>
 </main>
 
 <script>
+var _allCustomers = [];
+
 async function loadAdminCustomers() {
   if (!checkAdminAuth()) return;
   var el = document.getElementById('customers-list');
+  var statsEl = document.getElementById('customers-stats');
   if (!el) return;
+
+  el.innerHTML = '<div class="loading-spinner"></div>';
+
   try {
     var sb = await getSupabase();
-    var { data: orders } = await sb.from('orders').select('customer_name, customer_email, customer_city, total_price, created_at').order('created_at', { ascending: false });
-    if (!orders?.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">Žádní zákazníci</div>'; return; }
 
-    // Aggregate by email
-    var customers = {};
-    orders.forEach(o => {
-      var key = o.customer_email || o.customer_name;
-      if (!customers[key]) {
-        customers[key] = { name: o.customer_name, email: o.customer_email, city: o.customer_city, orders: 0, total: 0, last: o.created_at };
-      }
-      customers[key].orders++;
-      customers[key].total += o.total_price || 0;
-      if (o.created_at > customers[key].last) customers[key].last = o.created_at;
+    // Paralelně načti objednávky, recenze, tikety a newsletter
+    var [ordersRes, reviewsRes, ticketsRes, newsletterRes] = await Promise.all([
+      sb.from('orders').select('customer_name, customer_email, customer_phone, customer_city, total_amount, status, created_at').order('created_at', { ascending: false }),
+      sb.from('reviews').select('author_email, rating, created_at'),
+      sb.from('support_tickets').select('email, status, created_at'),
+      sb.from('newsletter_subscribers').select('email')
+    ]);
+
+    if (ordersRes.error) throw ordersRes.error;
+    var orders = ordersRes.data || [];
+    if (orders.length === 0) {
+      el.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">Žádní zákazníci — zatím nejsou objednávky.</div>';
+      return;
+    }
+
+    // Indexy pro rychlé vyhledávání
+    var reviewsByEmail  = {};
+    (reviewsRes.data || []).forEach(function(r) {
+      if (!r.author_email) return;
+      var k = r.author_email.toLowerCase();
+      if (!reviewsByEmail[k]) reviewsByEmail[k] = [];
+      reviewsByEmail[k].push(r);
     });
 
-    var sorted = Object.values(customers).sort((a, b) => b.total - a.total);
+    var ticketsByEmail = {};
+    (ticketsRes.data || []).forEach(function(t) {
+      if (!t.email) return;
+      var k = t.email.toLowerCase();
+      ticketsByEmail[k] = (ticketsByEmail[k] || 0) + 1;
+    });
 
-    el.innerHTML = `<table class="data-table">
-      <thead><tr><th>Jméno</th><th>Email</th><th>Město</th><th>Objednávky</th><th>Útrata celkem</th><th>Poslední nákup</th></tr></thead>
-      <tbody>${sorted.map(c => `
-        <tr>
-          <td style="font-weight:600;">${escapeHtml(c.name)}</td>
-          <td style="color:#777;font-size:13px;">${escapeHtml(c.email || '—')}</td>
-          <td style="color:#777;font-size:13px;">${escapeHtml(c.city || '—')}</td>
-          <td style="text-align:center;font-weight:600;">${c.orders}</td>
-          <td style="font-weight:700;color:#c8a96a;">${formatPrice(c.total)} Kč</td>
-          <td style="color:#666;font-size:12px;">${formatDate(c.last)}</td>
-        </tr>`).join('')}
-      </tbody></table>`;
+    var newsletterEmails = new Set((newsletterRes.data || []).map(function(n) {
+      return n.email.toLowerCase();
+    }));
+
+    // Agregace podle emailu
+    var customerMap = {};
+    orders.forEach(function(o) {
+      var key = (o.customer_email || o.customer_name || 'unknown').toLowerCase();
+      if (!customerMap[key]) {
+        customerMap[key] = {
+          name:       o.customer_name || '—',
+          email:      o.customer_email || '—',
+          phone:      o.customer_phone || '—',
+          city:       o.customer_city || '—',
+          orders:     0,
+          total:      0,
+          last:       o.created_at,
+          statuses:   {},
+          reviews:    reviewsByEmail[key]?.length || 0,
+          avgRating:  reviewsByEmail[key]?.length
+                        ? (reviewsByEmail[key].reduce(function(s,r){ return s+r.rating; }, 0) / reviewsByEmail[key].length).toFixed(1)
+                        : null,
+          tickets:    ticketsByEmail[key] || 0,
+          newsletter: newsletterEmails.has(key)
+        };
+      }
+      customerMap[key].orders++;
+      customerMap[key].total += (o.total_amount || 0);
+      if (o.created_at > customerMap[key].last) customerMap[key].last = o.created_at;
+      customerMap[key].statuses[o.status] = (customerMap[key].statuses[o.status] || 0) + 1;
+    });
+
+    _allCustomers = Object.values(customerMap).sort(function(a, b) { return b.total - a.total; });
+
+    // Statistiky
+    var totalRevenue    = _allCustomers.reduce(function(s, c) { return s + c.total; }, 0);
+    var avgOrderValue   = orders.length ? Math.round(totalRevenue / orders.length) : 0;
+    var repeatCustomers = _allCustomers.filter(function(c) { return c.orders > 1; }).length;
+    var newsletterCount = _allCustomers.filter(function(c) { return c.newsletter; }).length;
+
+    if (statsEl) {
+      statsEl.innerHTML = [
+        { label: 'Zákazníků celkem',      value: _allCustomers.length,           color: '#c8a96a' },
+        { label: 'Objednávek celkem',     value: orders.length,                  color: '#fff'    },
+        { label: 'Celkový obrat',         value: formatPrice(totalRevenue)+' Kč',color: '#4f4'    },
+        { label: 'Průměrná objednávka',   value: formatPrice(avgOrderValue)+' Kč',color: '#4af'   },
+        { label: 'Vracející se',          value: repeatCustomers,                color: '#fa0'    },
+        { label: 'Odběratelé newsletteru',value: newsletterCount,               color: '#c8a96a' },
+      ].map(function(s) {
+        return '<div style="padding:16px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;text-align:center;">' +
+          '<div style="font-size:22px;font-weight:700;color:' + s.color + ';margin-bottom:4px;">' + s.value + '</div>' +
+          '<div style="font-size:12px;color:#666;">' + s.label + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    renderCustomerTable(_allCustomers);
   } catch(e) {
-    el.innerHTML = `<div style="color:#f44;padding:20px;">Chyba: ${e.message}</div>`;
+    el.innerHTML = '<div style="color:#f44;padding:20px;">Chyba: ' + escapeHtml(e.message) + '</div>';
   }
 }
+
+function renderCustomerTable(customers) {
+  var el = document.getElementById('customers-list');
+  if (!el) return;
+
+  if (!customers.length) {
+    el.innerHTML = '<div style="text-align:center;padding:32px;color:#666;">Žádný zákazník nenalezen.</div>';
+    return;
+  }
+
+  el.innerHTML = '<div style="overflow-x:auto;"><table class="data-table">' +
+    '<thead><tr><th>Zákazník</th><th>Email</th><th>Město</th><th style="text-align:center;">Objednávky</th><th>Útrata</th><th>Recenze</th><th>Tikety</th><th>Newsletter</th><th>Poslední nákup</th></tr></thead>' +
+    '<tbody>' +
+    customers.map(function(c) {
+      var badge = c.orders >= 3
+        ? '<span style="font-size:10px;background:rgba(200,169,106,0.15);color:#c8a96a;padding:2px 6px;border-radius:10px;margin-left:6px;">VIP</span>'
+        : (c.orders > 1 ? '<span style="font-size:10px;background:rgba(74,170,255,0.1);color:#4af;padding:2px 6px;border-radius:10px;margin-left:6px;">Vracející</span>' : '');
+      var reviewCell = c.reviews > 0
+        ? '<span style="color:#fa0;">' + c.reviews + '× (' + c.avgRating + '★)</span>'
+        : '<span style="color:#444;">—</span>';
+      var ticketCell = c.tickets > 0
+        ? '<span style="color:#4af;">' + c.tickets + '</span>'
+        : '<span style="color:#444;">—</span>';
+      var newsletterCell = c.newsletter
+        ? '<span style="color:#4f4;">✓</span>'
+        : '<span style="color:#444;">—</span>';
+      return '<tr>' +
+        '<td><div style="font-weight:600;">' + escapeHtml(c.name) + badge + '</div>' +
+          (c.phone !== '—' ? '<div style="color:#555;font-size:11px;">' + escapeHtml(c.phone) + '</div>' : '') +
+        '</td>' +
+        '<td style="color:#777;font-size:13px;">' + (c.email !== '—' ? '<a href="mailto:' + escapeHtml(c.email) + '" style="color:#c8a96a;text-decoration:none;">' + escapeHtml(c.email) + '</a>' : '—') + '</td>' +
+        '<td style="color:#777;font-size:13px;">' + escapeHtml(c.city) + '</td>' +
+        '<td style="text-align:center;font-weight:700;">' + c.orders + '</td>' +
+        '<td style="font-weight:700;color:#c8a96a;">' + formatPrice(c.total) + ' Kč</td>' +
+        '<td style="text-align:center;">' + reviewCell + '</td>' +
+        '<td style="text-align:center;">' + ticketCell + '</td>' +
+        '<td style="text-align:center;">' + newsletterCell + '</td>' +
+        '<td style="color:#666;font-size:12px;">' + formatDate(c.last) + '</td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+function filterCustomers(query) {
+  var q = (query || '').toLowerCase().trim();
+  if (!q) { renderCustomerTable(_allCustomers); return; }
+  var filtered = _allCustomers.filter(function(c) {
+    return c.name.toLowerCase().includes(q) ||
+           c.email.toLowerCase().includes(q) ||
+           c.city.toLowerCase().includes(q);
+  });
+  renderCustomerTable(filtered);
+}
+
 window.loadAdminCustomers = loadAdminCustomers;
+window.filterCustomers    = filterCustomers;
 </script>

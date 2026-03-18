@@ -96,14 +96,14 @@ async function loadAffiliateDash() {
 
     if (tableEl) {
       // Najdi objednávky s tímto referral kódem
-      var { data: orders } = await sb.from('orders').select('order_number,total_price,created_at').ilike('note', '%' + aff.referral_code + '%').order('created_at', {ascending: false}).limit(20);
+      var { data: orders } = await sb.from('orders').select('order_number,total_amount,created_at').ilike('note', '%' + aff.referral_code + '%').order('created_at', {ascending: false}).limit(20);
       if (orders && orders.length > 0) {
         tableEl.innerHTML = orders.map(o => `
           <tr>
             <td>${escapeHtml(o.order_number)}</td>
             <td>${formatDate(o.created_at)}</td>
-            <td>${formatPrice(o.total_price)} Kč</td>
-            <td style="color:#4f4;">+${formatPrice(Math.round(o.total_price * aff.commission_rate / 100))} Kč</td>
+            <td>${formatPrice(o.total_amount)} Kč</td>
+            <td style="color:#4f4;">+${formatPrice(Math.round(o.total_amount * aff.commission_rate / 100))} Kč</td>
           </tr>`).join('');
       } else {
         tableEl.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#555;padding:24px;">Zatím žádné prodeje</td></tr>';

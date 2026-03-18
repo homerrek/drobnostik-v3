@@ -267,7 +267,7 @@ async function loadDeals() {
   }
 }
 
-window.loadShop = window.loadShop = loadShop;
+window.loadShop = loadShop;
 window.viewProduct = viewProduct;
 window.addToCart = addToCart;
 window.openQuickView = openQuickView;

@@ -44,9 +44,6 @@ const Router = {
     // Admin
     '/gift-card': '/pages/gift-card.html',
     '/help-center': '/pages/help-center.html',
-    '/terms': '/pages/terms.html',
-    '/privacy': '/pages/privacy.html',
-    '/returns': '/pages/returns.html',
     '/cookies': '/pages/privacy.html',
     '/admin/login': '/pages/admin/login.html',
     '/admin': '/pages/admin/dashboard.html',
@@ -205,7 +202,7 @@ const Router = {
     const base = '/' + path.split('/').slice(1, 3).join('/');
 
     const map = {
-      '/': () => run(initializeHome, 100),
+      '/': () => run(() => { if(typeof loadFeaturedProducts==='function') loadFeaturedProducts(); }, 100),
       '/shop': () => run(loadShop),
       '/product': () => run(loadProductDetail, 80),
       '/cart': () => run(loadCart),

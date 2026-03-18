@@ -73,6 +73,134 @@
 
 <script>
 // ── Color input renderer ────────────────────────────────────────
+// ── Cached image list from Supabase Storage ───────────────────
+var _imgCache = null;    // [{name, url}]
+var _imgCacheTs = 0;
+
+async function loadImgCache(forceRefresh) {
+  if (_imgCache && !forceRefresh && (Date.now() - _imgCacheTs < 60000)) return _imgCache;
+  try {
+    var sb = await getSupabase();
+    var { data, error } = await sb.storage.from('product-images').list('products', {
+      limit: 200, sortBy: { column: 'name', order: 'asc' }
+    });
+    if (error) throw error;
+    _imgCache = (data || [])
+      .filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f.name))
+      .map(f => {
+        var { data: u } = sb.storage.from('product-images').getPublicUrl('products/' + f.name);
+        return { name: f.name, url: u.publicUrl };
+      });
+    // Přidej lokální fallback obrázky
+    var local = [
+      { name: 'pokebowl-black-front.jpg',  url: '/images/products/pokebowl-black-front.jpg'  },
+      { name: 'pokebowl-black-back.jpg',   url: '/images/products/pokebowl-black-back.jpg'   },
+      { name: 'pokebowl-white-front.jpg',  url: '/images/products/pokebowl-white-front.jpg'  },
+      { name: 'pokebowl-white-back.jpg',   url: '/images/products/pokebowl-white-back.jpg'   },
+      { name: 'pokebowl-gray-front.jpg',   url: '/images/products/pokebowl-gray-front.jpg'   },
+      { name: 'pokebowl-gray-back.jpg',    url: '/images/products/pokebowl-gray-back.jpg'    },
+      { name: 'pokebowl-red-front.jpg',    url: '/images/products/pokebowl-red-front.jpg'    },
+    ];
+    // Lokální přidej jen pokud ještě nejsou v bucketu
+    var existingNames = new Set(_imgCache.map(i => i.name));
+    local.forEach(l => { if (!existingNames.has(l.name)) _imgCache.unshift(l); });
+    _imgCacheTs = Date.now();
+  } catch(e) {
+    // Fallback jen lokální
+    _imgCache = [
+      { name: 'pokebowl-black-front.jpg',  url: '/images/products/pokebowl-black-front.jpg'  },
+      { name: 'pokebowl-black-back.jpg',   url: '/images/products/pokebowl-black-back.jpg'   },
+      { name: 'pokebowl-white-front.jpg',  url: '/images/products/pokebowl-white-front.jpg'  },
+      { name: 'pokebowl-white-back.jpg',   url: '/images/products/pokebowl-white-back.jpg'   },
+      { name: 'pokebowl-gray-front.jpg',   url: '/images/products/pokebowl-gray-front.jpg'   },
+      { name: 'pokebowl-gray-back.jpg',    url: '/images/products/pokebowl-gray-back.jpg'    },
+      { name: 'pokebowl-red-front.jpg',    url: '/images/products/pokebowl-red-front.jpg'    },
+    ];
+  }
+  return _imgCache;
+}
+
+// Sestaví HTML pro jeden picker (dropdown + upload + náhled)
+function buildImagePicker(prefix, index, side, currentUrl) {
+  var sideLabel = side === 'front' ? 'Přední strana' : 'Zadní strana';
+  var fieldId   = `${prefix}-c${index}-${side}`;
+  return `
+    <div>
+      <label style="font-size:12px;">📸 ${sideLabel}</label>
+
+      <!-- Dropdown + náhled vedle sebe -->
+      <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+
+        <!-- Náhled aktuálního obrázku -->
+        <div style="flex-shrink:0;">
+          <img id="${fieldId}-thumb"
+            src="${escapeHtml(currentUrl || '')}"
+            style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #333;background:#111;display:${currentUrl ? 'block' : 'block'};"
+            onerror="this.src='';this.style.opacity='0.2'"
+            title="Náhled">
+        </div>
+
+        <!-- Select dropdown -->
+        <select id="${fieldId}-select"
+          style="flex:1;padding:8px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-size:13px;cursor:pointer;"
+          onchange="onImgSelectChange('${prefix}',${index},'${side}',this.value)">
+          <option value="">— Načítám obrázky… —</option>
+        </select>
+
+        <!-- Upload tlačítko -->
+        <button type="button"
+          onclick="triggerImageUpload('${prefix}',${index},'${side}')"
+          title="Nahrát nový obrázek"
+          style="padding:7px 10px;background:rgba(200,169,106,0.15);color:#c8a96a;border:1px solid rgba(200,169,106,0.3);border-radius:5px;cursor:pointer;font-size:13px;white-space:nowrap;flex-shrink:0;">
+          ⬆️
+        </button>
+        <input type="file" id="${fieldId}-file" accept="image/jpeg,image/png,image/webp,image/gif"
+          style="display:none;" onchange="handleImageUpload(this,'${prefix}',${index},'${side}')">
+
+      </div>
+
+      <!-- Skryté pole pro aktuální URL (čteno collectColors) -->
+      <input type="hidden" id="${fieldId}" value="${escapeHtml(currentUrl || '')}">
+      <div id="${fieldId}-status" style="font-size:11px;color:#999;min-height:14px;margin-top:3px;"></div>
+    </div>`;
+}
+
+// Naplní select dropdown obrázky (volá se po loadImgCache)
+async function populateImgSelect(prefix, index, side, currentUrl) {
+  var fieldId = `${prefix}-c${index}-${side}`;
+  var select  = document.getElementById(fieldId + '-select');
+  if (!select) return;
+
+  var imgs = await loadImgCache();
+
+  // Sestav options
+  select.innerHTML = '<option value="">— Vybrat obrázek —</option>' +
+    imgs.map(img =>
+      `<option value="${escapeHtml(img.url)}" ${img.url === currentUrl ? 'selected' : ''}>${escapeHtml(img.name)}</option>`
+    ).join('');
+
+  // Pokud currentUrl není v seznamu, přidej ji
+  if (currentUrl && !imgs.find(i => i.url === currentUrl)) {
+    select.insertAdjacentHTML('afterbegin',
+      `<option value="${escapeHtml(currentUrl)}" selected>📎 ${escapeHtml(currentUrl.split('/').pop())}</option>`);
+  }
+}
+
+function onImgSelectChange(prefix, index, side, url) {
+  var fieldId = `${prefix}-c${index}-${side}`;
+  // Aktualizuj skryté pole
+  var hidden = document.getElementById(fieldId);
+  if (hidden) hidden.value = url;
+  // Aktualizuj náhled
+  var thumb = document.getElementById(fieldId + '-thumb');
+  if (thumb) {
+    thumb.src = url || '';
+    thumb.style.opacity = url ? '1' : '0.2';
+  }
+  // Aktualizuj velký preview
+  updateColorPreview(prefix, index);
+}
+
 function renderColorInputs(prefix, count, existingColors = []) {
   var container = document.getElementById(prefix + '-color-inputs');
   if (!container) return;
@@ -83,7 +211,7 @@ function renderColorInputs(prefix, count, existingColors = []) {
 
   container.innerHTML = '';
   for (let i = 0; i < count; i++) {
-    var existing = existingColors[i] || {};
+    var existing  = existingColors[i] || {};
     var colorVal  = existing.value || defaultColors[i] || '';
     var nameVal   = existing.name  || defaultNames[i]  || '';
     var frontImg  = existing.front_image || '';
@@ -93,36 +221,122 @@ function renderColorInputs(prefix, count, existingColors = []) {
     container.insertAdjacentHTML('beforeend', `
       <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:14px;">
         <div style="font-size:12px;color:#c8a96a;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Barva ${i+1}</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+
+          <!-- Název + slug -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <div><label style="font-size:12px;">Název barvy</label>
-              <input type="text" id="${prefix}-c${i}-name" value="${escapeHtml(nameVal)}" placeholder="Černá" style="width:100%;padding:8px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-size:13px;">
+              <input type="text" id="${prefix}-c${i}-name" value="${escapeHtml(nameVal)}" placeholder="Černá"
+                style="width:100%;padding:8px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-size:13px;">
             </div>
             <div><label style="font-size:12px;">Hodnota (slug)</label>
-              <input type="text" id="${prefix}-c${i}-value" value="${escapeHtml(colorVal)}" placeholder="black" style="width:100%;padding:8px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-size:13px;" oninput="updateColorPreview('${prefix}',${i},this.value)">
+              <input type="text" id="${prefix}-c${i}-value" value="${escapeHtml(colorVal)}" placeholder="black"
+                style="width:100%;padding:8px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-size:13px;"
+                oninput="updateColorPreview('${prefix}',${i},this.value)">
             </div>
           </div>
+
+          <!-- Hex picker -->
           <div style="display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;">
             <input type="color" id="${prefix}-c${i}-hex" value="${hexVal || '#111111'}"
               style="width:40px;height:36px;border:1px solid #333;border-radius:5px;cursor:pointer;background:none;padding:2px;"
-              oninput="document.getElementById('${prefix}-c${i}-hex-text').value=this.value" title="Vyberte barvu">
+              oninput="document.getElementById('${prefix}-c${i}-hex-text').value=this.value" title="Barva hex">
             <input type="text" id="${prefix}-c${i}-hex-text" value="${hexVal || '#111111'}" placeholder="#111111"
               style="width:100%;padding:8px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-size:13px;font-family:monospace;"
               oninput="document.getElementById('${prefix}-c${i}-hex').value=this.value">
           </div>
-          <div><label style="font-size:12px;">URL obrázku — přední strana</label>
-            <input type="text" id="${prefix}-c${i}-front" value="${escapeHtml(frontImg)}" placeholder="/images/products/pokebowl-black-front.jpg" style="width:100%;padding:8px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-size:12px;font-family:monospace;">
-          </div>
-          <div><label style="font-size:12px;">URL obrázku — zadní strana</label>
-            <input type="text" id="${prefix}-c${i}-back" value="${escapeHtml(backImg)}" placeholder="/images/products/pokebowl-black-back.jpg" style="width:100%;padding:8px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-size:12px;font-family:monospace;">
-          </div>
+
+          <!-- Image pickers -->
+          ${buildImagePicker(prefix, i, 'front', frontImg)}
+          ${buildImagePicker(prefix, i, 'back',  backImg)}
+
+          <!-- Velký náhled obou stran -->
           <div id="${prefix}-c${i}-preview" style="display:flex;gap:8px;margin-top:2px;"></div>
         </div>
       </div>`);
 
-    // Show image previews if URLs present
+    // Naplni select asynchronně
+    (function(ii, fi, bi) {
+      populateImgSelect(prefix, ii, 'front', fi);
+      populateImgSelect(prefix, ii, 'back',  bi);
+    })(i, frontImg, backImg);
+
     if (frontImg || backImg) updateColorPreview(prefix, i, colorVal, frontImg, backImg);
   }
+}
+
+function triggerImageUpload(prefix, index, side) {
+  var input = document.getElementById(`${prefix}-c${index}-${side}-file`);
+  if (input) input.click();
+}
+
+async function handleImageUpload(fileInput, prefix, index, side) {
+  var file = fileInput.files[0];
+  if (!file) return;
+
+  var fieldId   = `${prefix}-c${index}-${side}`;
+  var statusEl  = document.getElementById(fieldId + '-status');
+  var hiddenUrl = document.getElementById(fieldId);
+  var thumb     = document.getElementById(fieldId + '-thumb');
+
+  if (file.size > 5 * 1024 * 1024) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:#f44;">❌ Max 5 MB</span>';
+    return;
+  }
+  if (statusEl) statusEl.innerHTML = '<span style="color:#fa0;">⏳ Nahrávám...</span>';
+
+  try {
+    var sb  = await getSupabase();
+    var ext = file.name.split('.').pop().toLowerCase();
+    var safe = file.name.replace(/\.[^.]+$/, '').replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
+    var path = `products/${Date.now()}-${safe}.${ext}`;
+
+    var { error } = await sb.storage.from('product-images').upload(path, file, { cacheControl:'3600', upsert:false });
+    if (error) throw error;
+
+    var { data: urlData } = sb.storage.from('product-images').getPublicUrl(path);
+    var publicUrl = urlData.publicUrl;
+
+    // Aktualizuj skryté pole
+    if (hiddenUrl) hiddenUrl.value = publicUrl;
+
+    // Aktualizuj náhled
+    if (thumb) { thumb.src = publicUrl; thumb.style.opacity = '1'; }
+
+    // Invaliduj cache a přidej nový obrázek na začátek selectu
+    _imgCache = null;
+    var select = document.getElementById(fieldId + '-select');
+    if (select) {
+      var opt = document.createElement('option');
+      opt.value    = publicUrl;
+      opt.selected = true;
+      opt.textContent = '⭐ ' + file.name;
+      select.insertAdjacentElement('afterbegin', opt);
+      // Přidej i do ostatních selectů ve stejném formuláři
+      refreshAllSelects(prefix, index, side, publicUrl, file.name);
+    }
+
+    updateColorPreview(prefix, index);
+    if (statusEl) statusEl.innerHTML = '<span style="color:#4f4;">✓ Nahráno</span>';
+    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+  } catch(e) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:#f44;">❌ ${escapeHtml(e.message)}</span>`;
+  }
+  fileInput.value = '';
+}
+
+// Po uploadu přidá nový obrázek do všech ostatních selectů ve formuláři
+function refreshAllSelects(prefix, skipIndex, skipSide, url, name) {
+  document.querySelectorAll(`select[id^="${prefix}-c"][id$="-select"]`).forEach(function(sel) {
+    var id = sel.id; // e.g. "new-c2-front-select"
+    if (id === `${prefix}-c${skipIndex}-${skipSide}-select`) return; // přeskočit ten aktuální
+    var hasIt = Array.from(sel.options).some(o => o.value === url);
+    if (!hasIt) {
+      var opt = document.createElement('option');
+      opt.value = url; opt.textContent = '⭐ ' + name;
+      sel.insertAdjacentElement('afterbegin', opt);
+    }
+  });
 }
 
 function updateColorPreview(prefix, index, colorValue, frontUrl, backUrl) {
@@ -132,12 +346,17 @@ function updateColorPreview(prefix, index, colorValue, frontUrl, backUrl) {
   var b = backUrl  || document.getElementById(`${prefix}-c${index}-back`)?.value;
   if (!f && !b) { preview.innerHTML = ''; return; }
   preview.innerHTML = [
-    f ? `<img src="${escapeHtml(f)}" alt="Přední" style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid #333;" onerror="this.style.opacity=0.3" title="Přední">` : '',
-    b ? `<img src="${escapeHtml(b)}" alt="Zadní"  style="width:52px;height:52px;object-fit:cover;border-radius:6px;border:1px solid #333;" onerror="this.style.opacity=0.3" title="Zadní">` : ''
+    f ? `<img src="${escapeHtml(f)}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #333;" onerror="this.style.opacity=0.2" title="Přední">` : '',
+    b ? `<img src="${escapeHtml(b)}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #333;" onerror="this.style.opacity=0.2" title="Zadní">` : ''
   ].join('');
 }
-window.renderColorInputs = renderColorInputs;
-window.updateColorPreview = updateColorPreview;
+
+window.renderColorInputs   = renderColorInputs;
+window.updateColorPreview  = updateColorPreview;
+window.triggerImageUpload  = triggerImageUpload;
+window.handleImageUpload   = handleImageUpload;
+window.onImgSelectChange   = onImgSelectChange;
+window.loadImgCache        = loadImgCache;
 
 function collectColors(prefix) {
   var count = parseInt(document.getElementById(prefix + '-color-count')?.value) || 3;

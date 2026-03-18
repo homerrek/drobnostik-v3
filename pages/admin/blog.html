@@ -46,6 +46,24 @@
           </div>
           <div><label>Perex (úryvek)</label><textarea id="bp-excerpt" rows="2" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;resize:vertical;"></textarea></div>
           <div><label>Obsah (HTML)</label><textarea id="bp-content" rows="6" style="width:100%;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-family:monospace;font-size:13px;resize:vertical;"></textarea></div>
+          <div>
+            <label>Obrázek článku</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" id="bp-image" placeholder="URL obrázku nebo nahraj soubor →"
+                style="flex:1;padding:9px;border:1px solid #333;border-radius:5px;background:#0a0a0a;color:#fff;font-size:13px;font-family:monospace;"
+                oninput="var p=document.getElementById('bp-image-preview');if(p){p.src=this.value;p.style.display=this.value?'block':'none';}">
+              <button type="button" onclick="document.getElementById('bp-image-file').click()"
+                style="padding:8px 12px;background:rgba(200,169,106,0.15);color:#c8a96a;border:1px solid rgba(200,169,106,0.3);border-radius:5px;cursor:pointer;font-size:13px;white-space:nowrap;">
+                ⬆️ Nahrát
+              </button>
+              <input type="file" id="bp-image-file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;"
+                onchange="uploadBlogImage(this)">
+            </div>
+            <div style="margin-top:8px;">
+              <img id="bp-image-preview" src="" alt="Náhled" style="display:none;max-height:120px;border-radius:6px;border:1px solid #333;object-fit:cover;">
+              <span id="bp-image-status" style="font-size:12px;color:#999;"></span>
+            </div>
+          </div>
           <div style="display:flex;gap:10px;">
             <button onclick="saveBlogPost()" class="btn-primary" style="padding:9px 20px;">Uložit</button>
             <button onclick="document.getElementById('blog-post-form').style.display='none'" class="btn-secondary" style="padding:9px 14px;">Zrušit</button>
@@ -96,6 +114,7 @@ async function saveBlogPost() {
     await sb.from('blog_posts').insert([{
       title, slug, excerpt: document.getElementById('bp-excerpt')?.value || '',
       content: document.getElementById('bp-content')?.value || '',
+      image: document.getElementById('bp-image')?.value?.trim() || null,
       category: document.getElementById('bp-category')?.value || 'novinky',
       reading_time: parseInt(document.getElementById('bp-reading')?.value) || 3,
       status: document.getElementById('bp-status')?.value || 'draft',
@@ -113,6 +132,31 @@ async function deleteBlogPost(id) {
 
 window.loadAdminBlog = loadAdminBlog;
 window.showBlogForm = showBlogForm;
+async function uploadBlogImage(fileInput) {
+  var file = fileInput.files[0];
+  if (!file) return;
+  var statusEl  = document.getElementById('bp-image-status');
+  var urlInput  = document.getElementById('bp-image');
+  var previewEl = document.getElementById('bp-image-preview');
+  if (file.size > 5*1024*1024) { if(statusEl) statusEl.innerHTML='<span style="color:#f44">❌ Max 5 MB</span>'; return; }
+  if (statusEl) statusEl.innerHTML = '<span style="color:#fa0">⏳ Nahrávám...</span>';
+  try {
+    var sb   = await getSupabase();
+    var ext  = file.name.split('.').pop().toLowerCase();
+    var name = 'blog/' + Date.now() + '-' + file.name.replace(/[^a-z0-9_.-]/gi,'-').toLowerCase();
+    var { error } = await sb.storage.from('product-images').upload(name, file, { cacheControl:'3600', upsert:false });
+    if (error) throw error;
+    var { data: urlData } = sb.storage.from('product-images').getPublicUrl(name);
+    if (urlInput)  { urlInput.value = urlData.publicUrl; }
+    if (previewEl) { previewEl.src = urlData.publicUrl; previewEl.style.display = 'block'; }
+    if (statusEl)  { statusEl.innerHTML = '<span style="color:#4f4">✓ Nahráno</span>'; }
+    setTimeout(() => { if(statusEl) statusEl.innerHTML=''; }, 3000);
+  } catch(e) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:#f44">❌ ' + escapeHtml(e.message) + '</span>';
+  }
+  fileInput.value = '';
+}
+window.uploadBlogImage = uploadBlogImage;
 window.saveBlogPost = saveBlogPost;
 window.deleteBlogPost = deleteBlogPost;
 </script>

@@ -22,22 +22,11 @@
       </div>
 
       <div style="position:relative;">
-        <div style="aspect-ratio:1;background:linear-gradient(135deg,#1a1a1a,#2a2a2a);border-radius:12px;overflow:hidden;position:relative;border:1px solid rgba(200,169,106,0.1);">
-          <img id="rotating-image" src="/images/products/pokebowl-black-front.jpg"
-            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity 0.2s;"
-            alt="Pokéball">
-        </div>
-        <div style="display:flex;gap:8px;margin-top:12px;justify-content:center;">
-          <button id="btn-front" onclick="homeSetView('front')" style="padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:rgba(200,169,106,0.9);color:#000;">Přední</button>
-          <button id="btn-back" onclick="homeSetView('back')" style="padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:rgba(0,0,0,0.5);color:#ccc;">Zadní</button>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:10px;justify-content:center;">
-          <div id="indicator-0" onclick="homeShowImage(0)" style="width:10px;height:10px;border-radius:50%;background:#c8a96a;cursor:pointer;" title="Černá přední"></div>
-          <div id="indicator-1" onclick="homeShowImage(1)" style="width:10px;height:10px;border-radius:50%;background:#333;cursor:pointer;" title="Černá zadní"></div>
-          <div id="indicator-2" onclick="homeShowImage(2)" style="width:10px;height:10px;border-radius:50%;background:#333;cursor:pointer;" title="Šedá přední"></div>
-          <div id="indicator-3" onclick="homeShowImage(3)" style="width:10px;height:10px;border-radius:50%;background:#333;cursor:pointer;" title="Šedá zadní"></div>
-          <div id="indicator-4" onclick="homeShowImage(4)" style="width:10px;height:10px;border-radius:50%;background:#333;cursor:pointer;" title="Bílá přední"></div>
-          <div id="indicator-5" onclick="homeShowImage(5)" style="width:10px;height:10px;border-radius:50%;background:#333;cursor:pointer;" title="Bílá zadní"></div>
+        <div style="aspect-ratio:1;background:linear-gradient(135deg,#1a1a1a,#2a2a2a);border-radius:12px;overflow:hidden;border:1px solid rgba(200,169,106,0.1);">
+          <img src="/images/pokeball-hero-main.jpg"
+            style="width:100%;height:100%;object-fit:cover;display:block;"
+            alt="Pokéball — Drobnostík"
+            onerror="this.src='/images/products/pokebowl-black-front.jpg'">
         </div>
       </div>
     </div>

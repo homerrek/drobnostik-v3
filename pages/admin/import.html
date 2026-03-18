@@ -22,6 +22,38 @@
     <div class="admin-content">
       <h1 style="font-size:22px;font-weight:700;margin-bottom:24px;">📁 Import / Export</h1>
 
+      <!-- ── Image Manager ───────────────────────────────────── -->
+      <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;margin-bottom:24px;">
+        <h2 style="font-size:16px;font-weight:700;margin-bottom:6px;">🖼️ Správce obrázků</h2>
+        <p style="color:#777;font-size:13px;margin-bottom:18px;">Nahrávej obrázky produktů do Supabase Storage. Obrázky lze pak použít jako URL v editoru produktu.</p>
+
+        <!-- Upload zone -->
+        <div id="img-drop-zone"
+          style="border:2px dashed rgba(200,169,106,0.3);border-radius:8px;padding:32px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:16px;"
+          onclick="document.getElementById('img-file-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='#c8a96a'"
+          ondragleave="this.style.borderColor='rgba(200,169,106,0.3)'"
+          ondrop="event.preventDefault();this.style.borderColor='rgba(200,169,106,0.3)';document.getElementById('img-file-input').files=event.dataTransfer.files;uploadImages(document.getElementById('img-file-input'))">
+          <div style="font-size:36px;margin-bottom:8px;">📸</div>
+          <div style="color:#c8a96a;font-weight:600;margin-bottom:4px;">Klikni nebo přetáhni obrázky sem</div>
+          <div style="color:#666;font-size:13px;">JPEG, PNG, WebP, GIF · max 5 MB / soubor · více souborů najednou</div>
+          <input type="file" id="img-file-input" multiple accept="image/jpeg,image/png,image/webp,image/gif"
+            style="display:none;" onchange="uploadImages(this)">
+        </div>
+
+        <!-- Upload log -->
+        <div id="img-upload-log" style="margin-bottom:16px;max-height:220px;overflow-y:auto;"></div>
+
+        <!-- Gallery -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:14px;font-weight:600;">Nahrané obrázky</div>
+          <button onclick="loadUploadedImages()" class="btn-secondary" style="padding:7px 14px;font-size:13px;">🔄 Obnovit</button>
+        </div>
+        <div id="img-gallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;">
+          <p style="color:#666;font-size:13px;grid-column:1/-1;">Klikni Obnovit pro načtení galerie.</p>
+        </div>
+      </div>
+
       <!-- Import CSV -->
       <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:24px;margin-bottom:20px;">
         <h2 style="font-size:16px;font-weight:700;margin-bottom:6px;">📥 Import produktů z CSV</h2>
@@ -207,4 +239,100 @@ async function exportData(type) {
 window.previewCSV = previewCSV;
 window.importCSV = importCSV;
 window.exportData = exportData;
+
+// ── Image upload manager ────────────────────────────────────────
+async function uploadImages(fileInput) {
+  var files = Array.from(fileInput.files);
+  if (!files.length) return;
+  var logEl = document.getElementById('img-upload-log');
+  if (logEl) logEl.innerHTML = '';
+
+  var sb = await getSupabase();
+  var results = [];
+
+  for (var file of files) {
+    var row = document.createElement('div');
+    row.style.cssText = 'padding:6px 0;border-bottom:1px solid #1a1a1a;font-size:13px;display:flex;align-items:center;gap:10px;';
+
+    if (file.size > 5 * 1024 * 1024) {
+      row.innerHTML = '<span style="color:#f44;">❌</span><span>' + escapeHtml(file.name) + '</span><span style="color:#f44;margin-left:auto;">Příliš velký (max 5 MB)</span>';
+      if (logEl) logEl.appendChild(row);
+      continue;
+    }
+
+    row.innerHTML = '<span style="color:#fa0;">⏳</span><span>' + escapeHtml(file.name) + '</span><span style="color:#666;margin-left:auto;">Nahrávám...</span>';
+    if (logEl) logEl.appendChild(row);
+
+    try {
+      var ext  = file.name.split('.').pop().toLowerCase();
+      var safe = file.name.replace(/\.[^.]+$/, '').replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
+      var path = 'products/' + Date.now() + '-' + safe + '.' + ext;
+
+      var { error } = await sb.storage.from('product-images').upload(path, file, { cacheControl: '3600', upsert: false });
+      if (error) throw error;
+
+      var { data: urlData } = sb.storage.from('product-images').getPublicUrl(path);
+      var url = urlData.publicUrl;
+      results.push({ name: file.name, url });
+
+      row.innerHTML =
+        '<span style="color:#4f4;">✓</span>' +
+        '<img src="' + escapeHtml(url) + '" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid #333;">' +
+        '<span>' + escapeHtml(file.name) + '</span>' +
+        '<a href="' + escapeHtml(url) + '" target="_blank" style="color:#c8a96a;font-size:11px;margin-left:auto;text-decoration:none;font-family:monospace;word-break:break-all;">' + escapeHtml(url) + '</a>' +
+        '<button onclick="navigator.clipboard?.writeText(\'' + escapeHtml(url) + '\');showToast(\'✓ Zkopírováno\')" style="padding:3px 8px;background:rgba(200,169,106,0.15);color:#c8a96a;border:none;border-radius:4px;cursor:pointer;font-size:11px;flex-shrink:0;">Kopírovat</button>';
+    } catch(e) {
+      row.innerHTML = '<span style="color:#f44;">❌</span><span>' + escapeHtml(file.name) + '</span><span style="color:#f44;margin-left:auto;">' + escapeHtml(e.message) + '</span>';
+    }
+  }
+
+  showToast('Nahráno ' + results.length + ' / ' + files.length + ' obrázků');
+  fileInput.value = '';
+}
+
+async function loadUploadedImages() {
+  var grid = document.getElementById('img-gallery');
+  if (!grid) return;
+  grid.innerHTML = '<div class="loading-spinner"></div>';
+  try {
+    var sb = await getSupabase();
+    var { data, error } = await sb.storage.from('product-images').list('products', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+    if (error) throw error;
+    if (!data || !data.length) { grid.innerHTML = '<p style="color:#666;padding:20px;">Žádné nahrané obrázky.</p>'; return; }
+
+    grid.innerHTML = data.map(function(f) {
+      var { data: urlData } = sb.storage.from('product-images').getPublicUrl('products/' + f.name);
+      var url = urlData.publicUrl;
+      var kb  = f.metadata?.size ? Math.round(f.metadata.size / 1024) + ' KB' : '';
+      return '<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;position:relative;">' +
+        '<img src="' + escapeHtml(url) + '" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;" onerror="this.parentElement.style.display=\'none\'">' +
+        '<div style="padding:8px;">' +
+          '<div style="font-size:11px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(f.name) + '</div>' +
+          (kb ? '<div style="font-size:10px;color:#555;">' + kb + '</div>' : '') +
+          '<div style="display:flex;gap:4px;margin-top:6px;">' +
+            '<button onclick="navigator.clipboard?.writeText(\'' + escapeHtml(url) + '\');showToast(\'✓ URL zkopírována\')" style="flex:1;padding:4px;background:rgba(200,169,106,0.15);color:#c8a96a;border:none;border-radius:4px;cursor:pointer;font-size:11px;">Kopírovat URL</button>' +
+            '<button onclick="deleteUploadedImage(\'' + escapeHtml(f.name) + '\')" style="padding:4px 8px;background:rgba(244,68,68,0.1);color:#f44;border:none;border-radius:4px;cursor:pointer;font-size:11px;">🗑️</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    grid.innerHTML = '<p style="color:#f44;padding:20px;">Chyba: ' + escapeHtml(e.message) + '</p>';
+  }
+}
+
+async function deleteUploadedImage(filename) {
+  if (!confirm('Smazat obrázek ' + filename + '?')) return;
+  try {
+    var sb = await getSupabase();
+    var { error } = await sb.storage.from('product-images').remove(['products/' + filename]);
+    if (error) throw error;
+    showToast('✓ Smazáno');
+    loadUploadedImages();
+  } catch(e) { showToast('Chyba: ' + e.message); }
+}
+
+window.uploadImages = uploadImages;
+window.loadUploadedImages = loadUploadedImages;
+window.deleteUploadedImage = deleteUploadedImage;
 </script>

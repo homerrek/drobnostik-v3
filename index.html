@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Drobnostík - Premium 3D Pokéboly</title>
   <meta name="description" content="Drobnostík — prémiové 3D tisknuté Pokebally z Česka.">
   <meta name="theme-color" content="#0a0a0a">
@@ -15,7 +18,6 @@
 <div id="page-progress" style="position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#c8a96a,#e0c090);z-index:9999;width:0;transition:width 0.1s;pointer-events:none;"></div>
 
 <!-- SKIP LINK -->
-<a href="#app" class="skip-link">Přeskočit na obsah</a>
 
 <!-- HEADER -->
 <header id="header" role="banner">
@@ -105,66 +107,81 @@
 
 <!-- FOOTER -->
 <footer id="footer" role="contentinfo">
-  <div style="max-width:1200px;margin:0 auto;padding:0 40px;">
-    <div class="footer-grid" style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px;">
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+  <div class="footer-inner">
+    <div class="footer-grid-6">
+
+      <!-- Logo + popis -->
+      <div class="footer-brand">
+        <div class="footer-logo">
           <img src="/images/logo.png" alt="Drobnostík" style="height:28px;width:auto;">
-          <span style="color:#c8a96a;font-size:18px;font-weight:700;">Drobnostík</span>
+          Drobnostík
         </div>
-        <p style="color:#777;font-size:14px;line-height:1.7;margin-bottom:16px;">Precizní 3D tisk. Ikonický design. Každý kus vzniká z kvalitních materiálů a moderní technologie.</p>
-        <div style="display:flex;gap:12px;">
-          <a href="#" style="color:#777;font-size:20px;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">📘</a>
-          <a href="#" style="color:#777;font-size:20px;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">📷</a>
-          <a href="#" style="color:#777;font-size:20px;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">▶️</a>
-          <a href="#" style="color:#777;font-size:20px;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🎵</a>
+        <p class="footer-desc">Prémiové 3D tisknuté Pokéboly z&nbsp;Česka. Precizní tisk, ikonický design, kvalitní materiály.</p>
+        <div class="footer-social">
+          <a href="#" title="Facebook">📘</a>
+          <a href="#" title="Instagram">📷</a>
+          <a href="#" title="YouTube">▶️</a>
+          <a href="#" title="TikTok">🎵</a>
         </div>
       </div>
+
+      <!-- Produkty -->
       <div>
-        <h4 style="color:#c8a96a;font-size:14px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Obchod</h4>
-        <ul style="list-style:none;padding:0;margin:0;">
-          <li style="margin-bottom:10px;"><a href="/shop" onclick="event.preventDefault();goTo('/shop')" style="color:#777;text-decoration:none;font-size:14px;">Všechny produkty</a></li>
-          <li style="margin-bottom:10px;"><a href="/best-sellers" onclick="event.preventDefault();goTo('/best-sellers')" style="color:#777;text-decoration:none;font-size:14px;">Bestsellery</a></li>
-          <li style="margin-bottom:10px;"><a href="/deals" onclick="event.preventDefault();goTo('/deals')" style="color:#777;text-decoration:none;font-size:14px;">Akce &amp; slevy</a></li>
-          <li style="margin-bottom:10px;"><a href="/compare" onclick="event.preventDefault();goTo('/compare')" style="color:#777;text-decoration:none;font-size:14px;">Srovnání produktů</a></li>
-          <li style="margin-bottom:10px;"><a href="/gift-card" onclick="event.preventDefault();goTo('/gift-card')" style="color:#777;text-decoration:none;font-size:14px;">Dárkové poukazy</a></li>
-          <li style="margin-bottom:10px;"><a href="/b2b" onclick="event.preventDefault();goTo('/b2b')" style="color:#777;text-decoration:none;font-size:14px;">B2B velkoobchod</a></li>
+        <h4 class="footer-heading">🛍️ Produkty</h4>
+        <ul class="footer-links">
+          <li><a href="/shop" onclick="event.preventDefault();goTo('/shop')">Všechny produkty</a></li>
+          <li><a href="/best-sellers" onclick="event.preventDefault();goTo('/best-sellers')">Bestsellery</a></li>
+          <li><a href="/deals" onclick="event.preventDefault();goTo('/deals')">Akce &amp; slevy</a></li>
+          <li><a href="/compare" onclick="event.preventDefault();goTo('/compare')">Srovnání</a></li>
+          <li><a href="/gift-card" onclick="event.preventDefault();goTo('/gift-card')">Dárkové poukazy</a></li>
+          <li><a href="/b2b" onclick="event.preventDefault();goTo('/b2b')">B2B velkoobchod</a></li>
         </ul>
       </div>
+
+      <!-- Podpora -->
       <div>
-        <h4 style="color:#c8a96a;font-size:14px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Zákaznická podpora</h4>
-        <ul style="list-style:none;padding:0;margin:0;">
-          <li style="margin-bottom:10px;"><a href="/faq" onclick="event.preventDefault();goTo('/faq')" style="color:#777;text-decoration:none;font-size:14px;">FAQ</a></li>
-          <li style="margin-bottom:10px;"><a href="/contact" onclick="event.preventDefault();goTo('/contact')" style="color:#777;text-decoration:none;font-size:14px;">Kontakt</a></li>
-          <li style="margin-bottom:10px;"><a href="/support" onclick="event.preventDefault();goTo('/support')" style="color:#777;text-decoration:none;font-size:14px;">Zákaznická podpora</a></li>
-          <li style="margin-bottom:10px;"><a href="/track-order" onclick="event.preventDefault();goTo('/track-order')" style="color:#777;text-decoration:none;font-size:14px;">Sledovat objednávku</a></li>
-          <li style="margin-bottom:10px;"><a href="/reviews" onclick="event.preventDefault();goTo('/reviews')" style="color:#777;text-decoration:none;font-size:14px;">Recenze</a></li>
-          <li style="margin-bottom:10px;"><a href="/help-center" onclick="event.preventDefault();goTo('/help-center')" style="color:#777;text-decoration:none;font-size:14px;">Centrum nápovědy</a></li>
+        <h4 class="footer-heading">🎧 Podpora</h4>
+        <ul class="footer-links">
+          <li><a href="/faq" onclick="event.preventDefault();goTo('/faq')">FAQ</a></li>
+          <li><a href="/contact" onclick="event.preventDefault();goTo('/contact')">Kontakt</a></li>
+          <li><a href="/support" onclick="event.preventDefault();goTo('/support')">Tickety</a></li>
+          <li><a href="/track-order" onclick="event.preventDefault();goTo('/track-order')">Sledovat zásilku</a></li>
+          <li><a href="/returns" onclick="event.preventDefault();goTo('/returns')">Vrácení zboží</a></li>
+          <li><a href="/help-center" onclick="event.preventDefault();goTo('/help-center')">Centrum nápovědy</a></li>
         </ul>
       </div>
+
+      <!-- Komunita -->
       <div>
-        <h4 style="color:#c8a96a;font-size:14px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">Komunita &amp; Info</h4>
-        <ul style="list-style:none;padding:0;margin:0;">
-          <li style="margin-bottom:10px;"><a href="/blog" onclick="event.preventDefault();goTo('/blog')" style="color:#777;text-decoration:none;font-size:14px;">Blog</a></li>
-          <li style="margin-bottom:10px;"><a href="/forum" onclick="event.preventDefault();goTo('/forum')" style="color:#777;text-decoration:none;font-size:14px;">Komunita &amp; fórum</a></li>
-          <li style="margin-bottom:10px;"><a href="/loyalty" onclick="event.preventDefault();goTo('/loyalty')" style="color:#777;text-decoration:none;font-size:14px;">Věrnostní program</a></li>
-          <li style="margin-bottom:10px;"><a href="/achievements" onclick="event.preventDefault();goTo('/achievements')" style="color:#777;text-decoration:none;font-size:14px;">Achievementy</a></li>
-          <li style="margin-bottom:10px;"><a href="/affiliate" onclick="event.preventDefault();goTo('/affiliate')" style="color:#777;text-decoration:none;font-size:14px;">Affiliate program</a></li>
-          <li style="margin-bottom:10px;"><a href="/about" onclick="event.preventDefault();goTo('/about')" style="color:#777;text-decoration:none;font-size:14px;">O nás</a></li>
-          <li style="margin-bottom:10px;"><a href="/privacy" onclick="event.preventDefault();goTo('/privacy')" style="color:#777;text-decoration:none;font-size:14px;">Ochrana osobních údajů</a></li>
-          <li style="margin-bottom:10px;"><a href="/terms" onclick="event.preventDefault();goTo('/terms')" style="color:#777;text-decoration:none;font-size:14px;">Podmínky použití</a></li>
-          <li style="margin-bottom:10px;"><a href="/returns" onclick="event.preventDefault();goTo('/returns')" style="color:#777;text-decoration:none;font-size:14px;">Vrácení zboží</a></li>
+        <h4 class="footer-heading">💬 Komunita</h4>
+        <ul class="footer-links">
+          <li><a href="/blog" onclick="event.preventDefault();goTo('/blog')">Blog</a></li>
+          <li><a href="/forum" onclick="event.preventDefault();goTo('/forum')">Fórum</a></li>
+          <li><a href="/reviews" onclick="event.preventDefault();goTo('/reviews')">Recenze</a></li>
+          <li><a href="/affiliate" onclick="event.preventDefault();goTo('/affiliate')">Affiliate</a></li>
+          <li><a href="/loyalty" onclick="event.preventDefault();goTo('/loyalty')">Věrnostní program</a></li>
+          <li><a href="/achievements" onclick="event.preventDefault();goTo('/achievements')">Achievementy</a></li>
         </ul>
       </div>
+
+      <!-- O nás -->
+      <div>
+        <h4 class="footer-heading">ℹ️ O nás</h4>
+        <ul class="footer-links">
+          <li><a href="/about" onclick="event.preventDefault();goTo('/about')">O Drobnostíku</a></li>
+          <li><a href="/subscriptions" onclick="event.preventDefault();goTo('/subscriptions')">Newsletter</a></li>
+          <li><a href="/live-chat" onclick="event.preventDefault();goTo('/live-chat')">Live chat</a></li>
+          <li><a href="/privacy" onclick="event.preventDefault();goTo('/privacy')">Ochrana dat</a></li>
+          <li><a href="/terms" onclick="event.preventDefault();goTo('/terms')">Podmínky použití</a></li>
+        </ul>
+      </div>
+
     </div>
-    <div style="border-top:1px solid rgba(200,169,106,0.1);padding:24px 0 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-      <span style="color:#555;font-size:13px;">© 2026 Drobnostík. Všechna práva vyhrazena. Vyrobeno s ❤️</span>
-      <div style="display:flex;gap:16px;">
-        <a href="#" style="color:#555;font-size:13px;text-decoration:none;">📘 Facebook</a>
-        <a href="#" style="color:#555;font-size:13px;text-decoration:none;">📷 Instagram</a>
-        <a href="#" style="color:#555;font-size:13px;text-decoration:none;">▶️ YouTube</a>
-        <a href="#" style="color:#555;font-size:13px;text-decoration:none;">🎵 TikTok</a>
-      </div>
+
+    <!-- Spodní pruh -->
+    <div class="footer-bottom">
+      <span>© 2026 Drobnostík. Všechna práva vyhrazena. Vyrobeno s ❤️ v&nbsp;Česku.</span>
+      <span style="color:#444;">info@drobnostik.cz · +420 777 123 456</span>
     </div>
   </div>
 </footer>
@@ -177,7 +194,6 @@
 <script src="/config/supabase-config.js"></script>
 <script src="/js/utils.js"></script>
 <script src="/js/cart.js"></script>
-<script src="/js/home-init.js"></script>
 <script src="/js/shop.js"></script>
 <script src="/js/product.js"></script>
 <script src="/js/admin.js"></script>

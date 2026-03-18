@@ -109,16 +109,30 @@ async function loadInventory() {
 async function updateStock(productId, qty) {
   try {
     var sb = await getSupabase();
-    await sb.from('products').update({ stock_quantity: parseInt(qty) || 0 }).eq('id', productId);
+    // Načti aktuální stav pro výpočet změny
+    var { data: current } = await sb.from('products').select('stock_quantity').eq('id', productId).single();
+    var newQty  = parseInt(qty) || 0;
+    var oldQty  = current?.stock_quantity || 0;
+    var change  = newQty - oldQty;
+    // Aktualizuj sklad
+    await sb.from('products').update({ stock_quantity: newQty }).eq('id', productId);
+    // Zapiš do logu
+    if (change !== 0) {
+      await sb.from('inventory_log').insert([{
+        product_id: productId,
+        change:     change,
+        reason:     change > 0 ? 'Ruční naskladnění (admin)' : 'Ruční odpis (admin)'
+      }]);
+    }
     showToast('✓ Sklad aktualizován');
   } catch(e) { showToast('Chyba: ' + e.message); }
 }
 
 function restockProduct(id, name) {
   var qty = prompt(`Kolik kusů naskladnit pro "${name}"?`, '10');
-  if (!qty || isNaN(qty)) return;
-  updateStock(id, qty);
-  setTimeout(loadInventory, 500);
+  if (!qty || isNaN(qty) || parseInt(qty) <= 0) return;
+  updateStock(id, parseInt(qty));
+  setTimeout(loadInventory, 600);
 }
 
 function exportInventory() {
